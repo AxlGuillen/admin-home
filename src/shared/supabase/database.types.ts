@@ -74,6 +74,163 @@ export type Database = {
         }
         Relationships: []
       }
+      home_finance_cards: {
+        Row: {
+          archived_at: string | null
+          color: string | null
+          created_at: string
+          created_by: string | null
+          cut_day: number | null
+          description: string | null
+          household_id: string
+          id: string
+          issuer: string | null
+          last_four: string | null
+          name: string
+          owner_person_id: string | null
+          payment_day: number | null
+          type: Database["public"]["Enums"]["home_finance_card_type"]
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          cut_day?: number | null
+          description?: string | null
+          household_id: string
+          id?: string
+          issuer?: string | null
+          last_four?: string | null
+          name: string
+          owner_person_id?: string | null
+          payment_day?: number | null
+          type: Database["public"]["Enums"]["home_finance_card_type"]
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          cut_day?: number | null
+          description?: string | null
+          household_id?: string
+          id?: string
+          issuer?: string | null
+          last_four?: string | null
+          name?: string
+          owner_person_id?: string | null
+          payment_day?: number | null
+          type?: Database["public"]["Enums"]["home_finance_card_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_finance_cards_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "home_households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "home_finance_cards_owner_person_id_fkey"
+            columns: ["owner_person_id"]
+            isOneToOne: false
+            referencedRelation: "home_people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      home_household_members: {
+        Row: {
+          created_at: string
+          household_id: string
+          role: Database["public"]["Enums"]["home_household_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          household_id: string
+          role?: Database["public"]["Enums"]["home_household_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          household_id?: string
+          role?: Database["public"]["Enums"]["home_household_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_household_members_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "home_households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      home_households: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      home_people: {
+        Row: {
+          color: string | null
+          created_at: string
+          household_id: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          household_id: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          household_id?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_people_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "home_households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       home_profiles: {
         Row: {
           created_at: string
@@ -315,6 +472,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      home_finance_card_type: "credito" | "debito"
+      home_household_role: "owner" | "member"
       ra_platform: "tiktok" | "instagram"
     }
     CompositeTypes: {
@@ -443,6 +602,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      home_finance_card_type: ["credito", "debito"],
+      home_household_role: ["owner", "member"],
       ra_platform: ["tiktok", "instagram"],
     },
   },

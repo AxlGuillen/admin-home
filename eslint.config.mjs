@@ -85,13 +85,19 @@ const eslintConfig = defineConfig([
               message:
                 "src/lib son utilidades puras: no deben importar nada del proyecto.",
             },
-            // Desde fuera, un módulo solo se toca por su entry point.
+            // Desde fuera, un módulo solo se toca por sus entry points:
+            // `index.ts` (cliente + servidor) o `server.ts` (solo servidor).
             {
               disallow: {
-                to: { element: { type: "module", fileInternalPath: "!index.ts" } },
+                to: {
+                  element: {
+                    type: "module",
+                    fileInternalPath: "!(index|server).ts",
+                  },
+                },
               },
               message:
-                "Importa el módulo por su entry point (@/modules/<nombre>), no por un archivo interno.",
+                "Importa el módulo por su entry point: @/modules/<nombre> o @/modules/<nombre>/server.",
             },
             // …salvo el propio módulo, que sí ve sus archivos internos.
             {

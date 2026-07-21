@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { CreditCard, LayoutDashboard } from "lucide-react";
+import { CreditCard, LayoutDashboard, Users } from "lucide-react";
 
 /**
  * Registro de módulos del monolito. Es lo único que sabe qué módulos existen:
@@ -31,6 +31,14 @@ export const MODULES: ModuleDescriptor[] = [
     description: "Tarjetas de débito y crédito, y su historial de pagos.",
     href: "/finance",
     icon: CreditCard,
+    status: "activo",
+  },
+  {
+    id: "people",
+    label: "Personas",
+    description: "Quién vive en la casa, para etiquetar y filtrar.",
+    href: "/people",
+    icon: Users,
     status: "activo",
   },
 ];

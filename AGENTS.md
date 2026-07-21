@@ -47,7 +47,8 @@ Todo módulo en `src/modules/<nombre>/` tiene esta forma:
 
 | Archivo             | Qué va aquí                                                          |
 | ------------------- | -------------------------------------------------------------------- |
-| `index.ts`          | **Único punto de entrada público.** Re-exporta lo que otros pueden usar. |
+| `index.ts`          | Entry point público, **seguro en cliente y servidor**: schemas, tipos, actions y componentes. |
+| `server.ts`         | Entry point **solo de servidor**: las queries. Ver la nota de abajo.  |
 | `schemas.ts`        | Esquemas Zod. **Fuente de verdad** de los tipos del dominio.          |
 | `types.ts`          | Tipos inferidos de los schemas + tipos de fila de la BD.              |
 | `queries.ts`        | Lecturas (server-only). Devuelven datos ya tipados.                   |
@@ -65,22 +66,50 @@ shared →  shared · lib
 lib    →  lib          (funciones puras, cero imports del proyecto)
 ```
 
-Nunca importes `@/modules/finance/queries` desde fuera de `finance`. Usa `@/modules/finance`.
-Si necesitas algo que `index.ts` no exporta, expórtalo ahí primero — de forma explícita.
+Nunca importes `@/modules/finance/queries` desde fuera de `finance`. Usa uno de los dos
+entry points. Si necesitas algo que no exportan, expórtalo ahí primero — de forma explícita.
+
+### Por qué dos entry points
+
+`queries.ts` importa `server-only`. Si `index.ts` lo re-exportara, **cualquier Client
+Component que importe el módulo arrastraría código de servidor al bundle del navegador y
+el build falla** — con un error que apunta a Supabase y no a la causa real.
+
+- Server Components y Server Actions → `@/modules/<nombre>/server`
+- Client Components, tipos, schemas, componentes → `@/modules/<nombre>`
+
+Las Server Actions sí van en `index.ts`: `"use server"` hace que Next las reemplace por
+un stub RPC en el cliente, así que no arrastran nada.
 
 ## Reglas no negociables
 
 1. **Zod primero.** Un campo nuevo se define en `schemas.ts` antes que en la BD o el form.
    El tipo se infiere con `z.infer`, nunca se escribe a mano.
 2. **Toda Server Action valida su input con Zod** antes de tocar la BD. Sin excepciones.
-3. **RLS siempre.** Cada tabla `home_*` tiene RLS activo y política ligada a `auth.uid()`.
-   El código nunca es la única barrera de seguridad.
+3. **RLS siempre.** Cada tabla `home_*` tiene RLS activo y política ligada al hogar del
+   usuario. El código nunca es la única barrera de seguridad.
+   - Los datos pertenecen al **hogar** (`household_id`), no al usuario.
+   - Las políticas usan `home_private.user_household_ids()`. Vive en un schema privado
+     para no quedar expuesta como RPC, y es `SECURITY DEFINER` para evitar la recursión
+     infinita de RLS cuando una política consulta su propia tabla.
+   - **Tener sesión no es tener acceso**: `auth.users` es compartido con las otras apps
+     de este proyecto de Supabase. Usa `requireHousehold()`, no `requireUser()`.
 4. **Nada de service_role en el cliente.** La app solo usa la publishable key.
 5. **Prefijo `home_` en todas las tablas.** La BD de Supabase es compartida con otros
    proyectos (`ra_`, `adala_`). Sin prefijo hay colisión.
 6. **Server Components por defecto.** `"use client"` solo en hojas que necesiten estado o eventos.
 7. **`npm run typecheck` y `npm run lint` deben pasar** antes de dar una tarea por terminada.
 8. **Dinero en centavos** (`integer`), nunca `float`. Moneda explícita en cada monto.
+9. **Los datos son del hogar, no de la persona.** `home_people` son etiquetas para saber
+   de quién es cada cosa y filtrar; no restringen quién ve qué. Todos los miembros del
+   hogar ven y editan todo.
+
+## Iconos
+
+`lucide-react` es la base. `@animateicons/react/lucide` tiene versiones animadas de unos
+248 iconos de Lucide — **no del set completo**: `Pencil`, `Archive` y `RotateCcw`, por
+ejemplo, no están. Usa el animado donde exista y la animación aporte (botones de acción),
+y `lucide-react` para el resto. Se ven igual porque el set animado *es* Lucide.
 
 ## Comandos
 
