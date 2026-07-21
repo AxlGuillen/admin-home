@@ -38,6 +38,7 @@ export type {
   StatementWithTransactions,
 } from "./types";
 
+export { CardDetailDashboard } from "./components/card-detail";
 export { FinanceOverviewDashboard } from "./components/finance-overview";
 export { CardFormDialog } from "./components/card-form-dialog";
 export { CardItem } from "./components/card-item";

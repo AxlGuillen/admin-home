@@ -41,6 +41,15 @@ export type FinanceOverview = {
 
 const monthOf = (date: string) => date.slice(0, 7);
 
+// Categories that move money rather than spend it; excluded from "gasto" breakdowns.
+const NON_SPEND = new Set([
+  "payment",
+  "refund",
+  "transfer",
+  "card_payment",
+  "income",
+]);
+
 // A subscription description like "NETFLIX COM 1" / "OPENAI *CHATGPT SUBSCR" collapses to a stable name.
 function subscriptionName(description: string): string {
   const upper = description.toUpperCase();
@@ -63,6 +72,205 @@ function subscriptionName(description: string): string {
   const hit = known.find((k) => upper.includes(k));
   if (hit) return hit === "APPLE.COM" ? "APPLE" : hit;
   return description.trim().slice(0, 24).toUpperCase();
+}
+
+export type CardMonth = {
+  month: string;
+  spendCents: number;
+  inflowCents: number;
+  balanceCents: number | null;
+  costCents: number;
+};
+export type CardMovement = {
+  month: string;
+  date: string | null;
+  description: string;
+  amountCents: number;
+  category: string | null;
+  flow: "in" | "out";
+};
+export type CardDetail = {
+  card: {
+    id: string;
+    name: string;
+    issuer: string | null;
+    color: string | null;
+    isCredit: boolean;
+    ownerPersonId: string | null;
+    limitCents: number | null;
+  };
+  months: CardMonth[];
+  byCategory: CategorySlice[];
+  subscriptions: Subscription[];
+  movements: CardMovement[];
+  totals: {
+    balanceCents: number | null;
+    limitCents: number | null;
+    costCents: number;
+    spendCents: number;
+    inflowCents: number;
+  };
+};
+
+export async function getCardDetail(cardId: string): Promise<CardDetail | null> {
+  await requireHousehold();
+  const supabase = await createClient();
+
+  const { data: card, error } = await supabase
+    .from("home_finance_cards")
+    .select("id, name, issuer, color, type, owner_person_id, credit_limit_cents")
+    .eq("id", cardId)
+    .maybeSingle();
+
+  if (error) throw new Error(`No se pudo cargar la tarjeta: ${error.message}`);
+  if (!card) return null;
+
+  const isCredit = card.type === "credito";
+  const months = new Map<string, CardMonth>();
+  const categories = new Map<string, number>();
+  const movements: CardMovement[] = [];
+  const subsMap = new Map<string, { months: Set<string>; total: number }>();
+
+  const addCategory = (cat: string | null, cents: number) => {
+    const c = cat ?? "other";
+    if (NON_SPEND.has(c)) return;
+    categories.set(c, (categories.get(c) ?? 0) + cents);
+  };
+
+  if (isCredit) {
+    const { data: statements } = await supabase
+      .from("home_finance_statements")
+      .select(
+        "id, cut_date, regular_charges_cents, payments_credits_cents, total_debt_cents, interest_cents, fees_cents, vat_cents",
+      )
+      .eq("card_id", cardId);
+    const stmtIds = (statements ?? []).map((s) => s.id);
+    const { data: txns } = stmtIds.length
+      ? await supabase
+          .from("home_finance_statement_transactions")
+          .select("statement_id, category, kind, amount_cents, charge_date, description")
+          .in("statement_id", stmtIds)
+      : { data: [] };
+    const stmtMonth = new Map(
+      (statements ?? []).map((s) => [s.id, monthOf(s.cut_date)]),
+    );
+
+    for (const s of statements ?? []) {
+      months.set(monthOf(s.cut_date), {
+        month: monthOf(s.cut_date),
+        spendCents: s.regular_charges_cents,
+        inflowCents: s.payments_credits_cents,
+        balanceCents: s.total_debt_cents,
+        costCents: s.interest_cents + s.fees_cents + s.vat_cents,
+      });
+    }
+    for (const t of txns ?? []) {
+      const month = t.charge_date
+        ? monthOf(t.charge_date)
+        : (stmtMonth.get(t.statement_id) ?? "");
+      const flow = t.kind === "charge" ? "out" : "in";
+      movements.push({
+        month,
+        date: t.charge_date,
+        description: t.description,
+        amountCents: t.amount_cents,
+        category: t.category,
+        flow,
+      });
+      if (t.kind === "charge") addCategory(t.category, t.amount_cents);
+      if (t.category === "subscription" && t.kind === "charge") {
+        const name = subscriptionName(t.description);
+        const e = subsMap.get(name) ?? { months: new Set<string>(), total: 0 };
+        if (t.charge_date) e.months.add(monthOf(t.charge_date));
+        e.total += t.amount_cents;
+        subsMap.set(name, e);
+      }
+    }
+  } else {
+    const { data: statements } = await supabase
+      .from("home_finance_account_statements")
+      .select("id, cut_date, deposits_cents, withdrawals_cents, closing_balance_cents")
+      .eq("card_id", cardId);
+    const stmtIds = (statements ?? []).map((s) => s.id);
+    const { data: movs } = stmtIds.length
+      ? await supabase
+          .from("home_finance_account_movements")
+          .select("statement_id, category, direction, amount_cents, operation_date, description")
+          .in("statement_id", stmtIds)
+      : { data: [] };
+    const stmtMonth = new Map(
+      (statements ?? []).map((s) => [s.id, monthOf(s.cut_date)]),
+    );
+
+    for (const s of statements ?? []) {
+      months.set(monthOf(s.cut_date), {
+        month: monthOf(s.cut_date),
+        spendCents: s.withdrawals_cents,
+        inflowCents: s.deposits_cents,
+        balanceCents: s.closing_balance_cents,
+        costCents: 0,
+      });
+    }
+    for (const m of movs ?? []) {
+      const month = m.operation_date
+        ? monthOf(m.operation_date)
+        : (stmtMonth.get(m.statement_id) ?? "");
+      const flow = m.direction === "deposit" ? "in" : "out";
+      movements.push({
+        month,
+        date: m.operation_date,
+        description: m.description,
+        amountCents: m.amount_cents,
+        category: m.category,
+        flow,
+      });
+      if (m.direction === "withdrawal") addCategory(m.category, m.amount_cents);
+    }
+  }
+
+  const monthList = [...months.values()].sort((a, b) =>
+    a.month.localeCompare(b.month),
+  );
+  const byCategory = [...categories.entries()]
+    .map(([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount);
+  const subscriptions: Subscription[] = [...subsMap.entries()]
+    .map(([name, e]) => ({
+      name,
+      months: e.months.size,
+      totalCents: e.total,
+      perMonthCents: Math.round(e.total / Math.max(e.months.size, 1)),
+      cards: [card.name],
+    }))
+    .filter((s) => s.months >= 2)
+    .sort((a, b) => b.perMonthCents - a.perMonthCents);
+
+  const latestMonth = monthList[monthList.length - 1];
+
+  return {
+    card: {
+      id: card.id,
+      name: card.name,
+      issuer: card.issuer,
+      color: card.color,
+      isCredit,
+      ownerPersonId: card.owner_person_id,
+      limitCents: card.credit_limit_cents,
+    },
+    months: monthList,
+    byCategory,
+    subscriptions,
+    movements: movements.sort((a, b) =>
+      (b.date ?? "").localeCompare(a.date ?? ""),
+    ),
+    totals: {
+      balanceCents: latestMonth?.balanceCents ?? null,
+      limitCents: card.credit_limit_cents,
+      costCents: monthList.reduce((n, m) => n + m.costCents, 0),
+      spendCents: monthList.reduce((n, m) => n + m.spendCents, 0),
+      inflowCents: monthList.reduce((n, m) => n + m.inflowCents, 0),
+    },
+  };
 }
 
 export async function getFinanceOverview(): Promise<FinanceOverview> {

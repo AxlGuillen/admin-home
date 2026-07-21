@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 
 import {
@@ -19,39 +20,9 @@ import { Badge } from "@/components/ui/badge";
 
 import { formatMoney } from "../money";
 import type { FinanceOverview } from "../analytics";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  shopping: "Compras",
-  groceries: "Súper",
-  services: "Servicios",
-  restaurant: "Restaurante",
-  transport: "Transporte",
-  advertising: "Publicidad",
-  subscription: "Suscripciones",
-  health: "Salud",
-  fees: "Comisiones",
-  education: "Educación",
-  entertainment: "Entretenimiento",
-  travel: "Viajes",
-  other: "Otro",
-};
-
-const CATEGORY_COLOR = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-];
+import { CATEGORY_COLORS, CATEGORY_LABELS, monthLabel } from "../categories";
 
 const pesos = (cents: number) => formatMoney(cents);
-const monthLabel = (key: string) => {
-  const [, m] = key.split("-");
-  return [
-    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
-    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
-  ][Number(m) - 1] ?? key;
-};
 
 function Kpi({
   label,
@@ -93,7 +64,7 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
   const categoryData = data.byCategory.map((c, i) => ({
     ...c,
     label: CATEGORY_LABELS[c.category] ?? c.category,
-    fill: CATEGORY_COLOR[i % CATEGORY_COLOR.length],
+    fill: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
   }));
 
   const categoryConfig: ChartConfig = Object.fromEntries(
@@ -227,13 +198,16 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
               return (
                 <div key={u.cardId} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center gap-2">
+                    <Link
+                      href={`/finance/${u.cardId}`}
+                      className="flex items-center gap-2 hover:underline"
+                    >
                       <span
                         className="size-2.5 rounded-full"
                         style={{ background: u.color ?? "var(--chart-1)" }}
                       />
                       {u.name}
-                    </span>
+                    </Link>
                     <span className="text-muted-foreground font-mono">
                       {pesos(u.debtCents)}
                       {u.limitCents ? ` / ${pesos(u.limitCents)}` : ""}

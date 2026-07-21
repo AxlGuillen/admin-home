@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
 import { Card as UICard, CardContent } from "@/components/ui/card";
 import { PersonBadge, type Person } from "@/modules/people";
@@ -54,7 +56,12 @@ export function CardItem({
 
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="leading-none font-medium">{card.name}</h3>
+            <Link
+              href={`/finance/${card.id}`}
+              className="leading-none font-medium hover:underline"
+            >
+              {card.name}
+            </Link>
             <Badge variant="secondary">{CARD_TYPE_LABELS[card.type]}</Badge>
             {isArchived && <Badge variant="outline">Archivada</Badge>}
             {owner ? (

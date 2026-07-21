@@ -1,6 +1,9 @@
 // Server-only entry point: queries import `server-only`, so exposing them via index.ts would pull server code into client bundles.
-export { getFinanceOverview } from "./analytics";
+export { getCardDetail, getFinanceOverview } from "./analytics";
 export type {
+  CardDetail,
+  CardMonth,
+  CardMovement,
   CardUtilization,
   CategorySlice,
   FeeLine,
