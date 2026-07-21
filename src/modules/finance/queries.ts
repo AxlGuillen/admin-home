@@ -4,9 +4,16 @@ import { requireHousehold } from "@/shared/auth/session";
 import type { Tables } from "@/shared/supabase/database.types";
 import { createClient } from "@/shared/supabase/server";
 
-import type { Card } from "./types";
+import type {
+  Card,
+  Statement,
+  StatementTransaction,
+  StatementWithTransactions,
+} from "./types";
 
 type CardRow = Tables<"home_finance_cards">;
+type StatementRow = Tables<"home_finance_statements">;
+type StatementTransactionRow = Tables<"home_finance_statement_transactions">;
 
 /** DB is snake_case, the domain camelCase; the translation lives only here. */
 export function toCard(row: CardRow): Card {
@@ -66,4 +73,123 @@ export async function getCard(id: string): Promise<Card | null> {
 
   if (error) throw new Error(`No se pudo cargar la tarjeta: ${error.message}`);
   return data ? toCard(data) : null;
+}
+
+export function toStatement(row: StatementRow): Statement {
+  return {
+    id: row.id,
+    householdId: row.household_id,
+    cardId: row.card_id,
+    periodStart: row.period_start,
+    periodEnd: row.period_end,
+    cutDate: row.cut_date,
+    paymentDueDate: row.payment_due_date,
+    daysInPeriod: row.days_in_period,
+    currency: row.currency,
+    previousBalanceCents: row.previous_balance_cents,
+    regularChargesCents: row.regular_charges_cents,
+    installmentCapitalCents: row.installment_capital_cents,
+    interestCents: row.interest_cents,
+    feesCents: row.fees_cents,
+    vatCents: row.vat_cents,
+    paymentsCreditsCents: row.payments_credits_cents,
+    noInterestPaymentCents: row.no_interest_payment_cents,
+    minimumPaymentCents: row.minimum_payment_cents,
+    minimumPlusInstallmentsCents: row.minimum_plus_installments_cents,
+    totalDebtCents: row.total_debt_cents,
+    creditLimitCents: row.credit_limit_cents,
+    availableCreditCents: row.available_credit_cents,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function toStatementTransaction(
+  row: StatementTransactionRow,
+): StatementTransaction {
+  return {
+    id: row.id,
+    householdId: row.household_id,
+    statementId: row.statement_id,
+    operationDate: row.operation_date,
+    chargeDate: row.charge_date,
+    description: row.description,
+    amountCents: row.amount_cents,
+    kind: row.kind,
+    category: row.category,
+    originalAmountCents: row.original_amount_cents,
+    originalCurrency: row.original_currency,
+    fxRate: row.fx_rate,
+    createdAt: row.created_at,
+  };
+}
+
+export async function listStatements(cardId: string): Promise<Statement[]> {
+  await requireHousehold();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("home_finance_statements")
+    .select("*")
+    .eq("card_id", cardId)
+    .order("cut_date", { ascending: false });
+
+  if (error)
+    throw new Error(`No se pudieron cargar los estados de cuenta: ${error.message}`);
+  return data.map(toStatement);
+}
+
+// Latest statement per card, for the consolidated payment calendar and utilization.
+export async function latestStatementsByCard(): Promise<Statement[]> {
+  await requireHousehold();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("home_finance_statements")
+    .select("*")
+    .order("cut_date", { ascending: false });
+
+  if (error)
+    throw new Error(`No se pudieron cargar los estados de cuenta: ${error.message}`);
+
+  const seen = new Set<string>();
+  const latest: Statement[] = [];
+  for (const row of data) {
+    if (seen.has(row.card_id)) continue;
+    seen.add(row.card_id);
+    latest.push(toStatement(row));
+  }
+  return latest;
+}
+
+export async function getStatementWithTransactions(
+  id: string,
+): Promise<StatementWithTransactions | null> {
+  await requireHousehold();
+  const supabase = await createClient();
+
+  const { data: statement, error } = await supabase
+    .from("home_finance_statements")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error)
+    throw new Error(`No se pudo cargar el estado de cuenta: ${error.message}`);
+  if (!statement) return null;
+
+  const { data: transactions, error: txnError } = await supabase
+    .from("home_finance_statement_transactions")
+    .select("*")
+    .eq("statement_id", id)
+    .order("charge_date", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (txnError)
+    throw new Error(`No se pudieron cargar los movimientos: ${txnError.message}`);
+
+  return {
+    ...toStatement(statement),
+    transactions: transactions.map(toStatementTransaction),
+  };
 }

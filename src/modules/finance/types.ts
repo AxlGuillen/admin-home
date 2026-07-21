@@ -1,10 +1,26 @@
 import type { z } from "zod";
 
-import type { cardInputSchema, cardSchema } from "./schemas";
+import type {
+  cardInputSchema,
+  cardSchema,
+  statementImportSchema,
+  statementSchema,
+  statementTransactionSchema,
+} from "./schemas";
 
 export type Card = z.infer<typeof cardSchema>;
 
 export type CardInput = z.infer<typeof cardInputSchema>;
+
+export type Statement = z.infer<typeof statementSchema>;
+
+export type StatementTransaction = z.infer<typeof statementTransactionSchema>;
+
+export type StatementImport = z.infer<typeof statementImportSchema>;
+
+export type StatementWithTransactions = Statement & {
+  transactions: StatementTransaction[];
+};
 
 /** Credit card: the cycle is guaranteed by the DB CHECK. */
 export type CreditCard = Card & {

@@ -10,10 +10,24 @@ export {
   cardInputSchema,
   cardSchema,
   cardTypeSchema,
+  statementImportSchema,
+  statementSchema,
+  statementTransactionImportSchema,
+  statementTransactionSchema,
+  TXN_KIND_LABELS,
+  txnKindSchema,
 } from "./schemas";
-export type { CardType } from "./schemas";
+export type { CardType, TxnKind } from "./schemas";
 export { isCreditCard } from "./types";
-export type { Card, CardInput, CreditCard } from "./types";
+export type {
+  Card,
+  CardInput,
+  CreditCard,
+  Statement,
+  StatementImport,
+  StatementTransaction,
+  StatementWithTransactions,
+} from "./types";
 
 export { CardFormDialog } from "./components/card-form-dialog";
 export { CardItem } from "./components/card-item";

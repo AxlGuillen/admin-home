@@ -9,7 +9,10 @@ Fuera de alcance: presupuestos, inversiones, conexión automática con bancos.
 
 ## Estado
 
-CRUD de tarjetas completo. Los pagos todavía no existen.
+CRUD de tarjetas completo. Estados de cuenta: capa de datos lista (tablas, schemas,
+tipos, lecturas). El registro se hace de forma semi-manual —los PDFs se extraen al
+formato de `statementImportSchema` y se cargan por SQL— tarjeta por tarjeta. La UI de
+estados de cuenta (calendario de pagos, utilización, gasto) todavía no existe.
 
 ## Contrato público
 
@@ -27,12 +30,19 @@ Dos entry points: `index.ts` (cliente + servidor) y `server.ts` (solo servidor).
 | `Card`, `CardType`, `CreditCard`, `isCreditCard` | tipos | Modelo de dominio. |
 | `nextPaymentDate`, `lastCutDate`, `formatCivilDate`, … | ciclo | Fechas de corte y pago. |
 | `formatMoney`, `parseMoney`, `Money` | dinero | Montos en centavos. |
+| `listStatements`, `latestStatementsByCard`, `getStatementWithTransactions` | `server.ts` | Lecturas de estados de cuenta. |
+| `toStatement`, `toStatementTransaction` | `server.ts` | Traducción de fila a dominio. |
+| `statementImportSchema`, `statementTransactionImportSchema` | schemas | Contrato de extracción del PDF (en pesos). |
+| `statementSchema`, `statementTransactionSchema`, `txnKindSchema`, `TXN_KIND_LABELS` | schemas | Modelo de dominio. |
+| `Statement`, `StatementTransaction`, `StatementWithTransactions`, `StatementImport`, `TxnKind` | tipos | Modelo de dominio. |
 
 ## Tablas
 
 | Tabla | Descripción | RLS |
 | ----- | ----------- | --- |
 | `home_finance_cards` | Tarjetas del hogar, débito y crédito juntas. | miembros del `household_id` |
+| `home_finance_statements` | Cabecera del estado de cuenta, 1 por `(card_id, cut_date)`. | miembros del `household_id` |
+| `home_finance_statement_transactions` | Movimientos de un estado de cuenta. | miembros del `household_id` |
 
 El hogar vive en `home_households` / `home_household_members` (migración 003), fuera de
 este módulo porque lo van a compartir todos.
@@ -49,8 +59,11 @@ este módulo porque lo van a compartir todos.
    `home_finance_cards_cycle` en la BD y el `superRefine` de `cardInputSchema`.
    Si cambias uno, cambia el otro.
 4. **Archivar es el "borrar" del CRUD.** `archived_at` en vez de `DELETE`, para que el
-   historial de pagos sobreviva. `deleteCard` existe pero **hay que bloquearlo en cuanto
-   existan pagos**: hoy es seguro solo porque nada apunta a una tarjeta todavía.
+   historial de estados de cuenta sobreviva. **Ya hay tablas que apuntan a la tarjeta**:
+   `home_finance_statements` tiene FK `ON DELETE CASCADE`, así que `deleteCard` ahora
+   **borra en silencio todos los estados de cuenta y movimientos de esa tarjeta**. Hay que
+   bloquear `deleteCard` cuando la tarjeta tenga estados de cuenta (o cambiar el borrado
+   por un archivar forzado). Pendiente antes de exponer `deleteCard` con datos reales.
 5. **Los montos van en centavos (`integer`), nunca `float`.** Ver `money.ts`.
 7. **`owner_person_id` es una etiqueta, no un permiso.** Dice de quién es la tarjeta y
    permite filtrar; **no** restringe quién la ve. Todos los miembros del hogar ven todas
@@ -97,14 +110,31 @@ es el día 5" no tiene hora ni zona horaria, y meter `Date` ahí introduce bugs 
   migrar después. La moneda sigue pendiente: `money.ts` ya la exige explícita.
 - **Las tarjetas son del hogar, no del usuario.** `household_id`, no `user_id`.
 
+## Estados de cuenta
+
+- **Un registro por estado de cuenta** (`home_finance_statements`): corte, fechas del
+  periodo, límite, saldo total, pago mínimo, pago para no generar intereses, resumen de
+  cargos/abonos. Sus movimientos van en `home_finance_statement_transactions`.
+- **Formato regulado.** CONDUSEF obliga a la misma estructura en todos los bancos, así que
+  una sola forma normalizada sirve para INVEX, BBVA, Banamex, Nu, etc.
+- **Nunca se guarda el PDF ni PAN/RFC/CLABE.** La extracción los descarta; solo queda
+  `last_four` en la tarjeta. Misma postura que la invariante 1 de tarjetas.
+- **El statement vive en el mismo hogar que su tarjeta**, por FK compuesta
+  `(card_id, household_id)`. Imposible cruzar hogares en la BD.
+- **`amount_cents` es magnitud; el signo lo da `kind`** (`charge`/`payment`/`refund`).
+- **Moneda por movimiento.** El monto va en MXN; si el cargo fue en otra divisa se guardan
+  `original_amount_cents` + `original_currency` + `fx_rate` (los tres o ninguno, por CHECK).
+- **Ingreso semi-manual.** No hay upload ni API: los PDFs se extraen al formato de
+  `statementImportSchema` (en pesos) y se cargan por SQL. `UNIQUE(card_id, cut_date)` evita
+  duplicar un mes al recargar.
+
 ## Decisiones pendientes
 
 Preguntar antes de implementar; no elegir por el usuario:
 
-1. **Corte vs. pago en el historial.** ¿Un registro por estado de cuenta (corte, límite,
-   saldo total, pago mínimo, pago sin intereses) más los abonos contra él, o solo un pago
-   por mes?
-2. **Moneda.** ¿Solo MXN o también USD? Afecta el esquema de pagos y `credit_limit_cents`,
-   que hoy asume una sola moneda.
-3. **Invitaciones al hogar.** Hoy agregar miembros se hace desde el dashboard: no hay
+1. **Invitaciones al hogar.** Hoy agregar miembros se hace desde el dashboard: no hay
    políticas de insert en `home_household_members` a propósito.
+2. **Tarjetas con "60 días de pago".** El modelo `cut_day`/`payment_day` asume pago ~1 mes
+   después del corte; algunas tarjetas (Plata) pagan a 60 días. Falta decidir cómo
+   representarlo sin romper el calendario.
+3. **Bloquear `deleteCard`** cuando la tarjeta tenga estados de cuenta (ver invariante 4).

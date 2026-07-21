@@ -146,6 +146,168 @@ export type Database = {
           },
         ]
       }
+      home_finance_statement_transactions: {
+        Row: {
+          amount_cents: number
+          category: string | null
+          charge_date: string | null
+          created_at: string
+          description: string
+          fx_rate: number | null
+          household_id: string
+          id: string
+          kind: Database["public"]["Enums"]["home_finance_txn_kind"]
+          operation_date: string | null
+          original_amount_cents: number | null
+          original_currency: string | null
+          statement_id: string
+        }
+        Insert: {
+          amount_cents: number
+          category?: string | null
+          charge_date?: string | null
+          created_at?: string
+          description: string
+          fx_rate?: number | null
+          household_id: string
+          id?: string
+          kind: Database["public"]["Enums"]["home_finance_txn_kind"]
+          operation_date?: string | null
+          original_amount_cents?: number | null
+          original_currency?: string | null
+          statement_id: string
+        }
+        Update: {
+          amount_cents?: number
+          category?: string | null
+          charge_date?: string | null
+          created_at?: string
+          description?: string
+          fx_rate?: number | null
+          household_id?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["home_finance_txn_kind"]
+          operation_date?: string | null
+          original_amount_cents?: number | null
+          original_currency?: string | null
+          statement_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_finance_statement_transactions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "home_households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "home_finance_stmt_txn_statement_fkey"
+            columns: ["statement_id", "household_id"]
+            isOneToOne: false
+            referencedRelation: "home_finance_statements"
+            referencedColumns: ["id", "household_id"]
+          },
+        ]
+      }
+      home_finance_statements: {
+        Row: {
+          available_credit_cents: number | null
+          card_id: string
+          created_at: string
+          created_by: string | null
+          credit_limit_cents: number | null
+          currency: string
+          cut_date: string
+          days_in_period: number | null
+          fees_cents: number
+          household_id: string
+          id: string
+          installment_capital_cents: number
+          interest_cents: number
+          minimum_payment_cents: number
+          minimum_plus_installments_cents: number
+          no_interest_payment_cents: number
+          payment_due_date: string
+          payments_credits_cents: number
+          period_end: string
+          period_start: string
+          previous_balance_cents: number
+          regular_charges_cents: number
+          total_debt_cents: number
+          updated_at: string
+          vat_cents: number
+        }
+        Insert: {
+          available_credit_cents?: number | null
+          card_id: string
+          created_at?: string
+          created_by?: string | null
+          credit_limit_cents?: number | null
+          currency?: string
+          cut_date: string
+          days_in_period?: number | null
+          fees_cents?: number
+          household_id: string
+          id?: string
+          installment_capital_cents?: number
+          interest_cents?: number
+          minimum_payment_cents?: number
+          minimum_plus_installments_cents?: number
+          no_interest_payment_cents?: number
+          payment_due_date: string
+          payments_credits_cents?: number
+          period_end: string
+          period_start: string
+          previous_balance_cents?: number
+          regular_charges_cents?: number
+          total_debt_cents?: number
+          updated_at?: string
+          vat_cents?: number
+        }
+        Update: {
+          available_credit_cents?: number | null
+          card_id?: string
+          created_at?: string
+          created_by?: string | null
+          credit_limit_cents?: number | null
+          currency?: string
+          cut_date?: string
+          days_in_period?: number | null
+          fees_cents?: number
+          household_id?: string
+          id?: string
+          installment_capital_cents?: number
+          interest_cents?: number
+          minimum_payment_cents?: number
+          minimum_plus_installments_cents?: number
+          no_interest_payment_cents?: number
+          payment_due_date?: string
+          payments_credits_cents?: number
+          period_end?: string
+          period_start?: string
+          previous_balance_cents?: number
+          regular_charges_cents?: number
+          total_debt_cents?: number
+          updated_at?: string
+          vat_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_finance_statements_card_fkey"
+            columns: ["card_id", "household_id"]
+            isOneToOne: false
+            referencedRelation: "home_finance_cards"
+            referencedColumns: ["id", "household_id"]
+          },
+          {
+            foreignKeyName: "home_finance_statements_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "home_households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       home_household_members: {
         Row: {
           created_at: string
@@ -476,6 +638,7 @@ export type Database = {
     }
     Enums: {
       home_finance_card_type: "credito" | "debito"
+      home_finance_txn_kind: "charge" | "payment" | "refund"
       home_household_role: "owner" | "member"
       ra_platform: "tiktok" | "instagram"
     }
@@ -606,6 +769,7 @@ export const Constants = {
   public: {
     Enums: {
       home_finance_card_type: ["credito", "debito"],
+      home_finance_txn_kind: ["charge", "payment", "refund"],
       home_household_role: ["owner", "member"],
       ra_platform: ["tiktok", "instagram"],
     },

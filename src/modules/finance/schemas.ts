@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { parseMoney } from "./money";
+import { currencySchema, parseMoney } from "./money";
 
 // No card number, CVV, or expiry here on purpose: storing them would make this a target for real payment data.
 export const cardTypeSchema = z.enum(["credito", "debito"]);
@@ -121,4 +121,110 @@ export const cardSchema = z.object({
   archivedAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+});
+
+export const txnKindSchema = z.enum(["charge", "payment", "refund"]);
+export type TxnKind = z.infer<typeof txnKindSchema>;
+
+export const TXN_KIND_LABELS: Record<TxnKind, string> = {
+  charge: "Cargo",
+  payment: "Pago",
+  refund: "Abono",
+};
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const isoDate = z.string().regex(ISO_DATE, "Fecha inválida (YYYY-MM-DD)");
+
+export const statementSchema = z.object({
+  id: z.uuid(),
+  householdId: z.uuid(),
+  cardId: z.uuid(),
+  periodStart: z.string(),
+  periodEnd: z.string(),
+  cutDate: z.string(),
+  paymentDueDate: z.string(),
+  daysInPeriod: z.number().int().nullable(),
+  currency: z.string(),
+  previousBalanceCents: z.number().int(),
+  regularChargesCents: z.number().int(),
+  installmentCapitalCents: z.number().int(),
+  interestCents: z.number().int(),
+  feesCents: z.number().int(),
+  vatCents: z.number().int(),
+  paymentsCreditsCents: z.number().int(),
+  noInterestPaymentCents: z.number().int(),
+  minimumPaymentCents: z.number().int(),
+  minimumPlusInstallmentsCents: z.number().int(),
+  totalDebtCents: z.number().int(),
+  creditLimitCents: z.number().int().nullable(),
+  availableCreditCents: z.number().int().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const statementTransactionSchema = z.object({
+  id: z.uuid(),
+  householdId: z.uuid(),
+  statementId: z.uuid(),
+  operationDate: z.string().nullable(),
+  chargeDate: z.string().nullable(),
+  description: z.string(),
+  amountCents: z.number().int(),
+  kind: txnKindSchema,
+  category: z.string().nullable(),
+  originalAmountCents: z.number().int().nullable(),
+  originalCurrency: z.string().nullable(),
+  fxRate: z.number().nullable(),
+  createdAt: z.string(),
+});
+
+// Extraction contract: I fill this JSON from each PDF, in pesos; cents live past this boundary.
+const pesosToCents = (value: number) => Math.round(value * 100);
+const pesos = z.number("Monto inválido").finite();
+const pesosField = pesos.default(0).transform(pesosToCents);
+const pesosNullable = pesos
+  .nullable()
+  .default(null)
+  .transform((value) => (value === null ? null : pesosToCents(value)));
+
+export const statementTransactionImportSchema = z.object({
+  operationDate: isoDate.nullable().default(null),
+  chargeDate: isoDate.nullable().default(null),
+  description: z.string().trim().min(1, "Descripción obligatoria").max(200),
+  amount: pesos.nonnegative("El monto no puede ser negativo").transform(pesosToCents),
+  kind: txnKindSchema,
+  category: z.preprocess(
+    blankToNull,
+    z.string().trim().max(40).nullable(),
+  ).default(null),
+  originalAmount: pesosNullable,
+  originalCurrency: currencySchema.nullable().default(null),
+  fxRate: z.number().positive().nullable().default(null),
+});
+
+export const statementImportSchema = z.object({
+  issuer: z.string().trim().min(1, "Banco obligatorio").max(60),
+  product: z.string().trim().min(1, "Nombre de la tarjeta obligatorio").max(60),
+  lastFour: z.string().regex(FOUR_DIGITS, "Deben ser exactamente 4 dígitos"),
+  ownerName: z.string().trim().min(1, "Titular obligatorio").max(60),
+  periodStart: isoDate,
+  periodEnd: isoDate,
+  cutDate: isoDate,
+  paymentDueDate: isoDate,
+  daysInPeriod: z.number().int().min(1).max(366).nullable().default(null),
+  currency: currencySchema.default("MXN"),
+  previousBalance: pesosField,
+  regularCharges: pesosField,
+  installmentCapital: pesosField,
+  interest: pesosField,
+  fees: pesosField,
+  vat: pesosField,
+  paymentsCredits: pesosField,
+  noInterestPayment: pesosField,
+  minimumPayment: pesosField,
+  minimumPlusInstallments: pesosField,
+  totalDebt: pesosField,
+  creditLimit: pesosNullable,
+  availableCredit: pesosNullable,
+  transactions: z.array(statementTransactionImportSchema),
 });
