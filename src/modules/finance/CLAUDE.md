@@ -127,6 +127,13 @@ es el día 5" no tiene hora ni zona horaria, y meter `Date` ahí introduce bugs 
 - **Ingreso semi-manual.** No hay upload ni API: los PDFs se extraen al formato de
   `statementImportSchema` (en pesos) y se cargan por SQL. `UNIQUE(card_id, cut_date)` evita
   duplicar un mes al recargar.
+- **Interés e IVA no se guardan como movimiento**, solo sus totales en el header
+  (`interest_cents`, `vat_cents`). Algunos bancos (Banamex) los itemizan como líneas y otros
+  (BBVA) no; guardarlos solo de unos rompía la consistencia entre bancos. Si algún día se
+  necesitan al detalle, se agregan clases `interest`/`tax` a `movement_class`.
+- **Validación de carga:** los cargos con `movement_class='regular'` deben sumar exactamente
+  `regular_charges_cents` del header (el "Cargos regulares (no a meses)" del PDF). Es el
+  check que se corre por banco antes de dar por buena una extracción.
 
 ## Decisiones pendientes
 
