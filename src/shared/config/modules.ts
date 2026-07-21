@@ -1,13 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 import { CreditCard, LayoutDashboard, Users } from "lucide-react";
 
-/**
- * Registro de módulos del monolito. Es lo único que sabe qué módulos existen:
- * la navegación se construye desde aquí, así que agregar un módulo a la sidebar
- * es agregar una línea a esta lista.
- */
 export type ModuleDescriptor = {
-  /** Slug del módulo. Coincide con el directorio en `src/modules/` y con la ruta. */
+  // Must match the directory in `src/modules/` and the route.
   id: string;
   label: string;
   description: string;

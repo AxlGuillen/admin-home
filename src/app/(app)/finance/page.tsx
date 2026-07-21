@@ -29,8 +29,7 @@ export default async function FinancePage({
     listPeople(),
   ]);
 
-  // `includeArchived` trae activas + archivadas; en la vista de archivadas solo
-  // queremos las archivadas.
+  // includeArchived returns active + archived; the archived view wants only archived.
   const visible = showArchived
     ? cards.filter((c) => c.archivedAt !== null)
     : cards;

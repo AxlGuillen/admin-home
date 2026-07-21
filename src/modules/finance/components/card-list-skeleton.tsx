@@ -1,10 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/**
- * Espejo del layout de `CardItem`. Si cambias uno, cambia el otro: un esqueleto
- * que no coincide con el contenido real produce un salto visible al cargar.
- */
+// Mirrors CardItem's layout: keep the two in sync or loading will visibly jump.
 export function CardListSkeleton({ count = 3 }: { count?: number }) {
   return (
     <div className="grid gap-3">

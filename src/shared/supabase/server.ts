@@ -7,12 +7,7 @@ import { env } from "@/shared/config/env";
 
 import type { Database } from "./database.types";
 
-/**
- * Cliente de Supabase para Server Components, Server Actions y Route Handlers.
- *
- * Crea uno nuevo por request — nunca lo guardes en una variable de módulo, o
- * acabarías compartiendo la sesión de un usuario entre requests.
- */
+// Create one per request; never store it in a module variable or you'd share a user's session across requests.
 export async function createClient() {
   const cookieStore = await cookies();
 
@@ -30,8 +25,7 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             }
           } catch {
-            // Los Server Components no pueden escribir cookies. El refresco de
-            // sesión lo hace `proxy.ts`, así que ignorar esto es seguro.
+            // Server Components can't write cookies; proxy.ts refreshes the session, so ignoring this is safe.
           }
         },
       },

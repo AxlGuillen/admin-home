@@ -20,7 +20,7 @@ export function toPerson(row: PersonRow): Person {
   };
 }
 
-/** Personas del hogar, alfabéticas. RLS ya limita al hogar del usuario. */
+// RLS already scopes rows to the user's household, so no explicit filter here.
 export async function listPeople(): Promise<Person[]> {
   await requireHousehold();
   const supabase = await createClient();

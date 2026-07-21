@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import { cardInputSchema } from "./schemas";
 
-/** Lo que llega de un `<form>`: puro string, y los vacíos como "". */
 function form(fields: Record<string, string | undefined>) {
   return cardInputSchema.safeParse(fields);
 }
@@ -80,7 +79,6 @@ describe("cardInputSchema", () => {
   });
 
   it("limpia el ciclo en débito aunque el formulario lo mande", () => {
-    // Pasa si el usuario llenó los días y luego cambió el tipo a débito.
     const result = form({ ...CREDIT, type: "debito" });
     expect(result.success).toBe(true);
     if (!result.success) return;
@@ -135,8 +133,6 @@ describe("cardInputSchema", () => {
     });
 
     it("un monto ilegible falla en vez de guardarse como sin límite", () => {
-      // El riesgo real: que "abc" se volviera null y la tarjeta quedara sin
-      // límite en silencio, en vez de avisarle al usuario.
       expect(limit("abc")).toBe("error");
     });
 

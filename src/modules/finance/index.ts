@@ -1,10 +1,3 @@
-/**
- * Contrato público del módulo de finanzas. Seguro de importar desde cliente y
- * servidor. Las lecturas viven en `@/modules/finance/server` (ver ese archivo).
- *
- * Lo que no aparezca en uno de los dos entry points es privado: ESLint bloquea
- * importarlo desde fuera.
- */
 export {
   archiveCard,
   createCard,

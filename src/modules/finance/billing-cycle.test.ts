@@ -18,10 +18,9 @@ const d = (iso: string): CivilDate => {
 };
 
 describe("todayIn", () => {
-  // El bug que motivó esta función: el servidor de producción corre en UTC, así
-  // que a partir de las 6pm hora de México ya cree que es el día siguiente.
+  // The bug this guards: production runs in UTC, so after 6pm Mexico time it thinks it's the next day.
   it("da la fecha local, no la del servidor", () => {
-    const nocheEnMexico = new Date("2026-07-21T01:00:00Z"); // 19:00 del día 20 en CDMX
+    const nocheEnMexico = new Date("2026-07-21T01:00:00Z"); // 19:00 on the 20th in CDMX
 
     expect(toISODate(todayIn("America/Mexico_City", nocheEnMexico))).toBe(
       "2026-07-20",
@@ -30,7 +29,7 @@ describe("todayIn", () => {
   });
 
   it("acierta justo al cambiar de día", () => {
-    // 00:30 del 21 en CDMX = 06:30 UTC del 21.
+    // 00:30 on the 21st in CDMX = 06:30 UTC on the 21st.
     const recienPasadaMedianoche = new Date("2026-07-21T06:30:00Z");
     expect(
       toISODate(todayIn("America/Mexico_City", recienPasadaMedianoche)),
@@ -38,7 +37,7 @@ describe("todayIn", () => {
   });
 
   it("cruza el fin de año según la zona", () => {
-    const anioNuevoUTC = new Date("2027-01-01T03:00:00Z"); // aún 31 de dic en CDMX
+    const anioNuevoUTC = new Date("2027-01-01T03:00:00Z"); // still Dec 31 in CDMX
     expect(toISODate(todayIn("America/Mexico_City", anioNuevoUTC))).toBe(
       "2026-12-31",
     );
@@ -106,9 +105,7 @@ describe("paymentDateForCut", () => {
   });
 
   it("compara los días configurados, no los ya ajustados por mes corto", () => {
-    // Corte 31 en febrero cae el 28, pero el pago 20 sigue siendo de marzo:
-    // si comparáramos 20 contra el 28 ajustado seguiríamos llegando a marzo,
-    // pero con corte 31 y pago 29 la comparación ingenua fallaría.
+    // Cut 31 clamps to Feb 28, but pay 20 is still March; a naive compare against the clamped 28 would break for pay 29.
     expect(toISODate(paymentDateForCut(31, 20, d("2026-02-28")))).toBe(
       "2026-03-20",
     );
@@ -129,14 +126,12 @@ describe("paymentDateForCut", () => {
 
 describe("nextPaymentDate", () => {
   it("devuelve el pago del corte más reciente cuando sigue pendiente", () => {
-    // Corte 5 marzo, pago 25 marzo; hoy es 10 de marzo.
     expect(toISODate(nextPaymentDate(5, 25, d("2026-03-10")))).toBe(
       "2026-03-25",
     );
   });
 
   it("salta al siguiente ciclo cuando el pago del corte anterior ya venció", () => {
-    // Hoy 26 de marzo: el pago del 25 ya pasó, toca el del corte del 5 de abril.
     expect(toISODate(nextPaymentDate(5, 25, d("2026-03-26")))).toBe(
       "2026-04-25",
     );
@@ -149,11 +144,9 @@ describe("nextPaymentDate", () => {
   });
 
   it("funciona cuando el pago cae en el mes siguiente al corte", () => {
-    // Corte 25, pago 14. Hoy 1 de abril: el corte del 25 de marzo paga el 14 de abril.
     expect(toISODate(nextPaymentDate(25, 14, d("2026-04-01")))).toBe(
       "2026-04-14",
     );
-    // Hoy 20 de abril: ese pago ya venció, toca el corte del 25 de abril → 14 de mayo.
     expect(toISODate(nextPaymentDate(25, 14, d("2026-04-20")))).toBe(
       "2026-05-14",
     );

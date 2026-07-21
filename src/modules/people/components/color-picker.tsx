@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PALETTE } from "@/lib/colors";
 
-/** Selector de color de la paleta. El valor viaja en un input oculto del form. */
 export function ColorPicker({
   name,
   value,

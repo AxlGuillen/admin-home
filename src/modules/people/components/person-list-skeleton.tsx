@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/** Espejo del layout de `PersonItem`. Si cambias uno, cambia el otro. */
+// Must mirror PersonItem's layout; change one, change the other.
 export function PersonListSkeleton({ count = 3 }: { count?: number }) {
   return (
     <div className="grid gap-3">

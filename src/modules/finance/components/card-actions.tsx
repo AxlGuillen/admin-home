@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-// Los iconos animados de @animateicons/react solo cubren parte de Lucide: Archive,
-// Pencil y RotateCcw no están en el set, así que esos vienen de lucide-react. Se ve
-// igual porque el set animado ES Lucide.
+// @animateicons covers only part of Lucide: Archive, Pencil, RotateCcw aren't in it, so they come from lucide-react.
 import { Archive, Pencil, RotateCcw } from "lucide-react";
 import { EllipsisVerticalIcon, Trash2Icon } from "@animateicons/react/lucide";
 import { toast } from "sonner";
@@ -56,9 +54,7 @@ export function CardActions({
 
   return (
     <div className="flex items-center">
-      {/* Editar vive fuera del menú a propósito: un Dialog anidado dentro de un
-          DropdownMenu se desmonta cuando el menú cierra, y sostenerlo depende de
-          un preventDefault frágil. Un botón aparte no tiene ese problema. */}
+      {/* Edit lives outside the menu on purpose: a Dialog nested in a DropdownMenu unmounts when the menu closes. */}
       <CardFormDialog
         card={card}
         people={people}

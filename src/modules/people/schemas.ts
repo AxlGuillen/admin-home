@@ -1,13 +1,5 @@
 import { z } from "zod";
 
-/**
- * Personas del hogar.
- *
- * Son **etiquetas, no permisos**: sirven para saber de quién es cada cosa y para
- * filtrar. Todos los miembros del hogar ven y editan todo, sin importar la persona
- * asignada. Si algún día se quisiera restringir por persona, sería un cambio de RLS,
- * no de este schema.
- */
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 const blankToNull = (value: unknown) =>

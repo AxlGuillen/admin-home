@@ -35,7 +35,6 @@ const NO_OWNER = "none";
 
 type State = ActionResult<Card> | null;
 
-/** Errores por campo que devuelve la action, para pintarlos junto al input. */
 function errorFor(state: State, field: string): string | undefined {
   if (!state || state.ok) return undefined;
   return state.fieldErrors?.[field]?.[0];
@@ -66,8 +65,7 @@ export function CardFormDialog({
   const [owner, setOwner] = useState<string>(card?.ownerPersonId ?? NO_OWNER);
   const formId = useId();
 
-  // Cerrar y avisar va dentro de la action, no en un useEffect: reaccionar al
-  // resultado con un efecto provoca un render extra y ESLint lo marca con razón.
+  // Close and toast inside the action, not a useEffect: reacting to the result with an effect adds a render and ESLint flags it.
   const [state, formAction, pending] = useActionState(
     async (_prev: State, formData: FormData): Promise<State> => {
       const result = isEdit
@@ -83,8 +81,7 @@ export function CardFormDialog({
     null,
   );
 
-  // Al reabrir, el formulario vuelve al estado de la tarjeta: si el usuario cerró
-  // a media edición, no queremos que reaparezcan sus cambios a medias.
+  // On reopen, reset to the card's values so a half-finished edit doesn't reappear.
   function handleOpenChange(next: boolean) {
     setOpen(next);
     if (next) {
@@ -107,7 +104,7 @@ export function CardFormDialog({
 
         <form id={formId} action={formAction} className="grid gap-4">
           {isEdit && <input type="hidden" name="id" value={card.id} />}
-          {/* El Select de Radix no envía valor nativo; estos hidden son los que viajan. */}
+          {/* Radix Select submits no native value; these hidden inputs carry it. */}
           <input type="hidden" name="type" value={type} />
           <input
             type="hidden"

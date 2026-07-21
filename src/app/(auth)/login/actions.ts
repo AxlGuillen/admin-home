@@ -30,8 +30,7 @@ export async function signIn(formData: FormData): Promise<ActionResult<never>> {
     password: parsed.data.password,
   });
 
-  // Mensaje genérico a propósito: distinguir "no existe" de "contraseña mal"
-  // le regala al atacante una forma de enumerar cuentas.
+  // Generic on purpose: distinguishing "no user" from "wrong password" lets attackers enumerate accounts.
   if (error) return fail("Correo o contraseña incorrectos");
 
   revalidatePath("/", "layout");

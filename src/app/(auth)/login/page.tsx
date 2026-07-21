@@ -9,7 +9,7 @@ export default async function LoginPage({
 }) {
   const { next } = await searchParams;
 
-  // Solo rutas internas: un `next` con URL absoluta sería un open redirect.
+  // Internal routes only: an absolute next URL would be an open redirect.
   const safeNext = next?.startsWith("/") && !next.startsWith("//") ? next : "/";
 
   return (

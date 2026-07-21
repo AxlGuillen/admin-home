@@ -2,15 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { updateSession } from "@/shared/supabase/proxy";
 
-/** Rutas accesibles sin sesión. */
 const PUBLIC_PATHS = ["/login", "/signup", "/auth"];
 
-/**
- * En Next 16 esto se llama Proxy; antes era `middleware.ts`. Refresca el token de
- * Supabase en cada request y hace la redirección optimista a /login.
- *
- * Es un atajo de UX, no una barrera de seguridad — de eso se encarga RLS.
- */
+// Optimistic redirect for UX, not a security barrier; RLS handles that.
 export async function proxy(request: NextRequest) {
   const { response, user } = await updateSession(request);
 
@@ -38,10 +32,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Todo excepto assets estáticos e imágenes, que no necesitan sesión y
-     * pagarían el costo del refresh en cada request.
-     */
+    // Skip static assets and images: they need no session and would pay the refresh cost on every request.
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -15,11 +15,7 @@ const FINANCE_PATH = "/finance";
 
 const idSchema = z.uuid("Identificador inválido");
 
-/**
- * Las Server Actions son endpoints HTTP: cualquiera puede invocarlas sin pasar por
- * el layout. Por eso cada una vuelve a exigir membresía y valida su input, aunque
- * el formulario ya lo haya hecho en el cliente.
- */
+// Server Actions are public HTTP endpoints: each re-checks membership and validates its input.
 function parseCardForm(formData: FormData) {
   return cardInputSchema.safeParse(Object.fromEntries(formData.entries()));
 }
@@ -99,17 +95,14 @@ export async function updateCard(
     .maybeSingle();
 
   if (error) return fail(`No se pudo guardar la tarjeta: ${error.message}`);
-  // `maybeSingle` devuelve null si RLS filtró la fila: no existe o no es de tu hogar.
+  // maybeSingle returns null when RLS filtered the row: it doesn't exist or isn't your household's.
   if (!data) return fail("La tarjeta no existe o no es de tu hogar");
 
   revalidatePath(FINANCE_PATH);
   return ok(toCard(data));
 }
 
-/**
- * Archivar es el "borrar" del CRUD. Cuando existan los pagos, borrar una tarjeta
- * se llevaría su historial por delante; archivar la saca de la lista sin perderlo.
- */
+// Archiving is the CRUD "delete": it hides the card without losing payment history.
 export async function archiveCard(id: string): Promise<ActionResult<void>> {
   return setArchivedAt(id, new Date().toISOString(), "archivar");
 }
@@ -143,10 +136,7 @@ async function setArchivedAt(
   return ok();
 }
 
-/**
- * Borrado definitivo. Hoy es seguro porque no hay nada que apunte a una tarjeta;
- * en cuanto exista `home_finance_payments` hay que bloquearlo si tiene movimientos.
- */
+// Hard delete. Safe only while nothing references a card; block it once payments exist.
 export async function deleteCard(id: string): Promise<ActionResult<void>> {
   await requireHousehold();
 

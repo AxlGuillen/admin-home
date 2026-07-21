@@ -2,13 +2,7 @@ import { z } from "zod";
 
 import { parseMoney } from "./money";
 
-/**
- * Fuente de verdad del dominio de tarjetas.
- *
- * Nota deliberada: aquí no hay número de tarjeta, CVV ni fecha de caducidad. No
- * habilitan nada en esta app y guardarlos convertiría una base doméstica en un
- * objetivo con datos de pago reales. Ver CLAUDE.md del módulo.
- */
+// No card number, CVV, or expiry here on purpose: storing them would make this a target for real payment data.
 export const cardTypeSchema = z.enum(["credito", "debito"]);
 export type CardType = z.infer<typeof cardTypeSchema>;
 
@@ -20,7 +14,7 @@ export const CARD_TYPE_LABELS: Record<CardType, string> = {
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 const FOUR_DIGITS = /^\d{4}$/;
 
-/** Un `<input>` vacío llega como "", y un campo ausente como `undefined`. Ambos son null. */
+/** An empty `<input>` arrives as "", an absent field as `undefined`; both become null. */
 const blankToNull = (value: unknown) =>
   value === undefined || (typeof value === "string" && value.trim() === "")
     ? null
@@ -57,23 +51,18 @@ const baseCardFields = {
   ),
   cutDay: z.preprocess(blankToNull, dayOfMonth.nullable()),
   paymentDay: z.preprocess(blankToNull, dayOfMonth.nullable()),
-  // Etiqueta de a quién pertenece. No restringe quién la ve: en el hogar todos
-  // ven todas las tarjetas.
+  // Owner label, not a permission: everyone in the household sees every card.
   ownerPersonId: z.preprocess(
     blankToNull,
     z.uuid("Persona inválida").nullable(),
   ),
-  /**
-   * El usuario teclea pesos ("50,000" o "$50,000.00") y se guarda en centavos.
-   * La conversión vive aquí para que ninguna capa de arriba maneje pesos sueltos.
-   */
+  // User types pesos, stored as cents; the conversion lives here so no upper layer handles loose pesos.
   creditLimitCents: z.preprocess(
     (value) => {
       const blank = blankToNull(value);
       if (blank === null) return null;
       if (typeof blank !== "string") return blank;
-      // `NaN` en vez de null para que falle la validación y dé un mensaje,
-      // en lugar de guardarse silenciosamente como "sin límite".
+      // NaN, not null, so validation fails with a message instead of silently saving "no limit".
       return parseMoney(blank) ?? Number.NaN;
     },
     z
@@ -84,11 +73,7 @@ const baseCardFields = {
   ),
 };
 
-/**
- * Lo que manda el formulario. El `superRefine` es lo que hace cumplir la misma
- * invariante que el CHECK de la BD: crédito necesita ciclo, débito no lo tiene.
- * Validar aquí da errores por campo; el CHECK es la red por si algo se salta esto.
- */
+// superRefine enforces the same invariant as the DB CHECK (credit needs a cycle); here it gives per-field errors.
 export const cardInputSchema = z
   .object(baseCardFields)
   .superRefine((card, ctx) => {
@@ -109,9 +94,7 @@ export const cardInputSchema = z
       });
     }
   })
-  // Débito no tiene ciclo ni línea de crédito: se limpian en vez de rechazar,
-  // porque el formulario puede traer valores viejos si el usuario cambió el tipo
-  // después de escribirlos.
+  // Debit has no cycle or credit line: clear them rather than reject, since the form may carry stale values after a type switch.
   .transform((card) =>
     card.type === "debito"
       ? { ...card, cutDay: null, paymentDay: null, creditLimitCents: null }
@@ -122,7 +105,6 @@ export const updateCardInputSchema = z.object({
   id: z.uuid("Identificador inválido"),
 });
 
-/** Una tarjeta ya persistida, como la ve el resto de la app. */
 export const cardSchema = z.object({
   id: z.uuid(),
   householdId: z.uuid(),

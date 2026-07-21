@@ -9,13 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-/**
- * Cubre todas las rutas del área protegida. Sin esto, un error de red o de
- * Supabase deja al usuario en la pantalla genérica de Next, sin forma de reintentar.
- *
- * `reset()` vuelve a renderizar el segmento: como las páginas son dinámicas, eso
- * reintenta la consulta de verdad.
- */
 export default function AppError({
   error,
   reset,
@@ -34,8 +27,7 @@ export default function AppError({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* En producción Next reemplaza el mensaje por un digest; se muestra
-              porque es lo único accionable para reportar el fallo. */}
+          {/* In prod Next replaces the message with a digest; it's the only thing the user can report. */}
           <p className="text-muted-foreground font-mono text-xs break-all">
             {error.digest ?? error.message}
           </p>

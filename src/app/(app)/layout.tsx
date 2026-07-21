@@ -5,11 +5,7 @@ import { Button } from "@/components/ui/button";
 import { requireHousehold } from "@/shared/auth/session";
 import { ACTIVE_MODULES } from "@/shared/config/modules";
 
-/**
- * Layout de todo lo que exige acceso. `requireHousehold()` corre en el servidor
- * antes de renderizar cualquier hijo, así que ninguna página de aquí adentro
- * necesita volver a checar — salvo las Server Actions, que sí lo hacen siempre.
- */
+// requireHousehold() gates every child, so pages here don't recheck — only Server Actions do.
 export default async function AppLayout({
   children,
 }: {

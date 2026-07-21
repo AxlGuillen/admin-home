@@ -8,7 +8,7 @@ import type { Card } from "./types";
 
 type CardRow = Tables<"home_finance_cards">;
 
-/** La BD habla snake_case y el dominio camelCase. La traducción vive solo aquí. */
+/** DB is snake_case, the domain camelCase; the translation lives only here. */
 export function toCard(row: CardRow): Card {
   return {
     id: row.id,
@@ -29,18 +29,13 @@ export function toCard(row: CardRow): Card {
   };
 }
 
-/**
- * Tarjetas del hogar. Por default solo las activas.
- *
- * No se filtra por `household_id`: la política de RLS ya lo hace. Duplicar el
- * filtro aquí escondería una política mal escrita hasta que fuera tarde.
- */
+// No household_id filter: RLS already does it, and duplicating it would mask a broken policy.
 export async function listCards({
   includeArchived = false,
   ownerPersonId,
 }: {
   includeArchived?: boolean;
-  /** Filtro de presentación. `"none"` = tarjetas sin dueño asignado. */
+  /** Presentation filter. `"none"` = cards with no owner assigned. */
   ownerPersonId?: string | "none";
 } = {}): Promise<Card[]> {
   await requireHousehold();

@@ -4,10 +4,9 @@ import type { cardInputSchema, cardSchema } from "./schemas";
 
 export type Card = z.infer<typeof cardSchema>;
 
-/** Lo que sale del formulario ya validado y normalizado. */
 export type CardInput = z.infer<typeof cardInputSchema>;
 
-/** Tarjeta de crédito: el ciclo está garantizado por el CHECK de la BD. */
+/** Credit card: the cycle is guaranteed by the DB CHECK. */
 export type CreditCard = Card & {
   type: "credito";
   cutDay: number;

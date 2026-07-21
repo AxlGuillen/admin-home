@@ -1,14 +1,11 @@
 import { z } from "zod";
 
-/**
- * Todo monto de este módulo vive en centavos como entero. La aritmética de punto
- * flotante pierde precisión (`0.1 + 0.2 !== 0.3`), y en dinero eso se acumula.
- */
+// Amounts are integer cents: float arithmetic loses precision (0.1 + 0.2 !== 0.3) and it accumulates in money.
 export const currencySchema = z.enum(["MXN", "USD"]);
 export type Currency = z.infer<typeof currencySchema>;
 
 export const moneySchema = z.object({
-  /** Monto en centavos. Puede ser negativo (un saldo a favor). */
+  /** Cents. Can be negative (a credit balance). */
   cents: z.int(),
   currency: currencySchema,
 });
@@ -18,13 +15,7 @@ export function money(cents: number, currency: Currency = "MXN"): Money {
   return moneySchema.parse({ cents, currency });
 }
 
-/**
- * Convierte lo que el usuario teclea a centavos. Acepta separadores de miles y
- * el signo de pesos: "$1,234.50" → 123450.
- *
- * Devuelve `null` si no se puede interpretar, para que el llamador decida qué
- * error mostrar.
- */
+// Returns null when unparseable so the caller decides which error to show.
 export function parseMoney(input: string): number | null {
   const cleaned = input.replace(/[\s$,]/g, "");
   if (cleaned === "" || !/^-?\d*\.?\d*$/.test(cleaned)) return null;
@@ -35,7 +26,6 @@ export function parseMoney(input: string): number | null {
   return Math.round(value * 100);
 }
 
-/** Formatea centavos para la UI: `formatMoney(123450)` → "$1,234.50". */
 export function formatMoney(
   cents: number,
   currency: Currency = "MXN",

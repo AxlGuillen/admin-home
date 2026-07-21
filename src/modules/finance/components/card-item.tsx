@@ -17,11 +17,7 @@ import { CARD_TYPE_LABELS } from "../schemas";
 import { isCreditCard, type Card } from "../types";
 import { CardActions } from "./card-actions";
 
-/**
- * Esto se renderiza en el servidor, que en producción corre en UTC. Por eso la
- * zona horaria es explícita: sin ella, a partir de las 6pm hora de México la
- * cuenta de días saldría corrida.
- */
+// Rendered on the server, which runs in UTC in production; hence the explicit time zone.
 function nextPaymentLabel(card: Card): string | null {
   if (!isCreditCard(card)) return null;
 
@@ -41,7 +37,6 @@ export function CardItem({
   people,
 }: {
   card: Card;
-  /** Persona dueña, ya resuelta por la página. `null` si no tiene asignada. */
   owner: Person | null;
   people: Person[];
 }) {

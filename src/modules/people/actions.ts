@@ -13,14 +13,14 @@ import type { Person } from "./types";
 
 const idSchema = z.uuid("Identificador inválido");
 
-/** Postgres 23505: violación de índice único (household_id, lower(name)). */
+// Postgres 23505: unique index violation on (household_id, lower(name)).
 const DUPLICATE_NAME = "23505";
 
 function fieldErrors(error: z.ZodError): Record<string, string[]> {
   return z.flattenError(error).fieldErrors as Record<string, string[]>;
 }
 
-/** Las personas se ven en varios módulos, así que se revalida todo el árbol. */
+// People render across several modules, so revalidate the whole tree.
 function revalidateAll() {
   revalidatePath("/", "layout");
 }
@@ -94,11 +94,7 @@ export async function updatePerson(
   return ok(toPerson(data));
 }
 
-/**
- * Borrar una persona NO borra sus tarjetas: la FK es `on delete set null`, así que
- * quedan sin dueño y se reasignan. Perder tarjetas por renombrar mal a alguien
- * sería un desastre desproporcionado.
- */
+// FKs to home_people are `on delete set null`, so a person's cards survive deletion unowned.
 export async function deletePerson(id: string): Promise<ActionResult<void>> {
   await requireHousehold();
 

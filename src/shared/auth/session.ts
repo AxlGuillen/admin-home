@@ -5,7 +5,6 @@ import type { User } from "@supabase/supabase-js";
 
 import { createClient } from "@/shared/supabase/server";
 
-/** Devuelve el usuario autenticado, o `null` si no hay sesión válida. */
 export async function getUser(): Promise<User | null> {
   const supabase = await createClient();
   const {
@@ -14,12 +13,7 @@ export async function getUser(): Promise<User | null> {
   return user;
 }
 
-/**
- * Exige sesión. Si no hay, redirige a /login.
- *
- * Úsalo al inicio de toda Server Action y de todo layout protegido. `getUser()`
- * valida el JWT contra Supabase; `getSession()` no, así que no lo uses en servidor.
- */
+// Use getUser (validates the JWT against Supabase), not getSession, on the server.
 export async function requireUser(): Promise<User> {
   const user = await getUser();
   if (!user) redirect("/login");
@@ -28,7 +22,6 @@ export async function requireUser(): Promise<User> {
 
 export type Membership = { user: User; householdId: string };
 
-/** Hogar del usuario, o `null` si no pertenece a ninguno. */
 export async function getHouseholdId(user: User): Promise<string | null> {
   const supabase = await createClient();
   const { data } = await supabase
@@ -41,13 +34,7 @@ export async function getHouseholdId(user: User): Promise<string | null> {
   return data?.household_id ?? null;
 }
 
-/**
- * Exige sesión **y** membresía de un hogar.
- *
- * Tener sesión no basta: `auth.users` es compartido con las otras apps de este
- * proyecto de Supabase, así que un usuario de esas apps pasa el login sin más.
- * La membresía es lo que da acceso real a Admin Home.
- */
+// A session isn't enough: auth.users is shared across the project's apps, so household membership is what grants real access.
 export async function requireHousehold(): Promise<Membership> {
   const user = await requireUser();
   const householdId = await getHouseholdId(user);
