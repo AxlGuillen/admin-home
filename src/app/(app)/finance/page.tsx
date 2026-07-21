@@ -57,6 +57,10 @@ export default async function FinancePage({
         </div>
 
         <Button variant="ghost" size="sm" asChild>
+          <Link href="/finance/analisis">Análisis</Link>
+        </Button>
+
+        <Button variant="ghost" size="sm" asChild>
           <Link href={showArchived ? filterHref(owner) : `/finance?archived=1`}>
             {showArchived ? "Ver activas" : "Ver archivadas"}
           </Link>
