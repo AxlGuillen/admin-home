@@ -12,7 +12,7 @@ deploy de Next.js, dominios aislados en `src/modules/*`.
 Stack: Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Tailwind v4 ·
 shadcn/ui (base radix, preset nova) · Supabase (Postgres + Auth + RLS) · Zod v4 · Vitest.
 
-Idioma: **código y nombres de archivo en inglés, UI y comentarios de dominio en español.**
+Idioma: **código, nombres de archivo y comentarios en inglés; UI en español.**
 
 ## Regla de oro
 
@@ -113,6 +113,11 @@ un stub RPC en el cliente, así que no arrastran nada.
     los CHECK vuelven imposible el estado inválido; validar solo en el código lo deja
     dependiendo de que nadie se equivoque. El schema de Zod es para dar buenos mensajes
     de error, no para ser la única defensa.
+12. **Casi nada de comentarios.** El código se explica solo: nombres claros,
+    funciones chicas, tipos. Un comentario solo se justifica cuando explica un
+    *por qué* no obvio (una decisión, un workaround, una restricción externa),
+    nunca para describir lo que el código ya dice. Cuando haga falta, en inglés
+    y en una línea. Nada de encabezados narrativos ni bloques paso a paso.
 
 ## Rutas
 
