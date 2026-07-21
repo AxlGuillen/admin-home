@@ -43,5 +43,17 @@ jobs:
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
           prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
-          # Tope de seguridad para que un review no se vaya de las manos en costo.
-          claude_args: "--max-turns 30"
+          # Modelo y effort van explícitos: la action no documenta un default, así
+          # que sin esto el comportamiento depende de lo que traiga el CLI ese día
+          # y puede cambiar sin aviso.
+          #
+          # Opus + high porque un review que no encuentra los bugs es peor que no
+          # tener review: da confianza falsa. Si el consumo del plan se vuelve un
+          # problema, baja a `--model sonnet` — es el ajuste correcto antes que
+          # recortar el effort.
+          #
+          # --max-turns es el tope para que un review no se vaya de las manos.
+          claude_args: |
+            --model opus
+            --effort high
+            --max-turns 30
