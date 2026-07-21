@@ -1,0 +1,44 @@
+# Review automático de Claude en cada PR. Complementa al CI: `check` verifica que
+# el código compile y pase tests; esto busca lo que ninguna de esas cosas ve —
+# errores de lógica, huecos de seguridad, casos borde.
+#
+# NO bloquea el merge a propósito: es una opinión más, no una compuerta.
+#
+# Requiere el secret ANTHROPIC_API_KEY (ver README). Consume créditos de la API
+# de Anthropic por cada corrida, aparte de tu suscripción de Claude Code.
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+# Un review a la vez por PR: si empujas tres commits seguidos, se cancela el
+# review en curso en vez de pagar tres reviews del mismo código.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: claude review
+    # El repo es público. Un PR desde un fork no tiene acceso a los secrets, así
+    # que el job fallaría de forma confusa — y sin esta guarda, cualquiera podría
+    # quemar tus créditos de API abriendo PRs.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
+          plugins: "code-review@claude-code-plugins"
+          prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+          # Tope de seguridad para que un review no se vaya de las manos en costo.
+          claude_args: "--max-turns 30"

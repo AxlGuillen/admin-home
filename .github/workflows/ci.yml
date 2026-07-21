@@ -1,0 +1,50 @@
+# CI — la red de seguridad automática: ningún PR puede llegar a main con
+# tipos rotos, lint sucio o tests fallando. Corre exactamente `npm run check`
+# (tsc + eslint + vitest), el mismo comando que se corre en local.
+#
+# Para que sea BLOQUEANTE: Settings → Branches → main → require status check "check".
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Si llegan varios pushes seguidos al mismo PR, solo interesa el último.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Misma mayor que en local. `cache: npm` ya guarda ~/.npm usando
+          # package-lock.json como llave, así que no hace falta un paso aparte.
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck + lint + tests
+        run: npm run check
+
+      # `check` no cubre el build, y en este proyecto ya pasó: typecheck limpio y
+      # el build reventando por un useSearchParams sin Suspense. Los errores de
+      # prerender solo salen aquí.
+      #
+      # Los valores son de relleno a propósito: el build no consulta Supabase
+      # (todas las páginas son dinámicas), solo necesita que `env.ts` valide.
+      # No son secretos — la publishable key viaja al navegador de todos modos.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
