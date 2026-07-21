@@ -1,22 +1,9 @@
-# Review automático de Claude en cada PR. Complementa al CI: `check` verifica que
-# el código compile y pase tests; esto busca lo que ninguna de esas cosas ve —
-# errores de lógica, huecos de seguridad, casos borde.
-#
-# NO bloquea el merge a propósito: es una opinión más, no una compuerta.
-#
-# Autenticado con la suscripción de Claude Code, no con la API de Anthropic:
-# el token sale de `claude setup-token` y el consumo va contra tu plan.
-#
-# GitHub Actions corre en servidores de GitHub, así que no puede usar tu sesión
-# local — necesita una credencial propia. De ahí el secret.
 name: Claude Code Review
 
 on:
   pull_request:
     types: [opened, synchronize]
 
-# Un review a la vez por PR: si empujas tres commits seguidos, se cancela el
-# review en curso en vez de pagar tres reviews del mismo código.
 concurrency:
   group: claude-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -24,9 +11,7 @@ concurrency:
 jobs:
   review:
     name: claude review
-    # El repo es público. Un PR desde un fork no tiene acceso a los secrets, así
-    # que el job fallaría de forma confusa — y sin esta guarda, cualquiera podría
-    # quemar tus créditos de API abriendo PRs.
+    # Skip forks: they can't read secrets, and this stops anyone burning credits via PRs on a public repo.
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -35,6 +20,8 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
+      # The action fetches an OIDC token to identify itself; without this it fails with "Could not fetch an OIDC token".
+      id-token: write
 
     steps:
       - uses: anthropics/claude-code-action@v1
@@ -43,16 +30,7 @@ jobs:
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
           prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
-          # Modelo y effort van explícitos: la action no documenta un default, así
-          # que sin esto el comportamiento depende de lo que traiga el CLI ese día
-          # y puede cambiar sin aviso.
-          #
-          # Opus + high porque un review que no encuentra los bugs es peor que no
-          # tener review: da confianza falsa. Si el consumo del plan se vuelve un
-          # problema, baja a `--model sonnet` — es el ajuste correcto antes que
-          # recortar el effort.
-          #
-          # --max-turns es el tope para que un review no se vaya de las manos.
+          # Model and effort are explicit: the action documents no default, so otherwise it drifts with the CLI.
           claude_args: |
             --model opus
             --effort high
