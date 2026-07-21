@@ -44,13 +44,29 @@ export function toISODate({ year, month, day }: CivilDate): string {
   return `${year}-${mm}-${dd}`;
 }
 
-/** Fecha civil de "hoy" en la zona horaria del usuario. */
-export function today(now: Date = new Date()): CivilDate {
-  return {
-    year: now.getFullYear(),
-    month: now.getMonth() + 1,
-    day: now.getDate(),
-  };
+/**
+ * Fecha civil de "hoy" en una zona horaria explícita.
+ *
+ * La zona es obligatoria a propósito. `new Date().getDate()` usa la zona del proceso:
+ * en tu máquina es la de México y todo se ve bien, pero en producción el servidor
+ * corre en UTC — seis horas adelante. Eso hacía que a partir de las 6pm hora local la
+ * app dijera un día menos de los que faltan, y que el mismo día del pago lo diera por
+ * vencido. Un `today()` sin zona invita justo a ese bug, así que no existe.
+ */
+export function todayIn(timeZone: string, now: Date = new Date()): CivilDate {
+  // "en-CA" formatea como YYYY-MM-DD, pero se leen las partes en vez de parsear
+  // el string para no depender del formato del locale.
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((p) => p.type === type)?.value);
+
+  return { year: get("year"), month: get("month"), day: get("day") };
 }
 
 /** Último corte ocurrido, contando hoy como ya ocurrido. */

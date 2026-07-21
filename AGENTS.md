@@ -100,9 +100,25 @@ un stub RPC en el cliente, así que no arrastran nada.
 6. **Server Components por defecto.** `"use client"` solo en hojas que necesiten estado o eventos.
 7. **`npm run typecheck` y `npm run lint` deben pasar** antes de dar una tarea por terminada.
 8. **Dinero en centavos** (`integer`), nunca `float`. Moneda explícita en cada monto.
+   Los formularios aceptan pesos y convierten en el schema; de ahí para adentro,
+   centavos.
 9. **Los datos son del hogar, no de la persona.** `home_people` son etiquetas para saber
    de quién es cada cosa y filtrar; no restringen quién ve qué. Todos los miembros del
    hogar ven y editan todo.
+10. **Nunca uses la hora del proceso para saber qué día es.** El servidor de producción
+    corre en UTC y las páginas se renderizan ahí, así que `new Date().getDate()` da un
+    día equivocado a partir de las 6pm hora de México. Usa `HOUSEHOLD_TIME_ZONE` de
+    `@/shared/config/household`.
+11. **Si una regla se puede hacer cumplir en la BD, va en la BD.** Las FKs compuestas y
+    los CHECK vuelven imposible el estado inválido; validar solo en el código lo deja
+    dependiendo de que nadie se equivoque. El schema de Zod es para dar buenos mensajes
+    de error, no para ser la única defensa.
+
+## Rutas
+
+Cada ruta del área protegida necesita su `loading.tsx` con esqueletos que **espejeen el
+layout real** (si cambias el componente, cambia el esqueleto). `(app)/error.tsx` cubre
+los errores de todas: no hace falta uno por ruta salvo que quieras un mensaje distinto.
 
 ## Iconos
 

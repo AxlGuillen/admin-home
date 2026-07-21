@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useId, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -149,8 +150,20 @@ export function CardFormDialog({
               </SelectContent>
             </Select>
             <p className="text-muted-foreground text-xs">
-              Solo para saber de quién es y poder filtrar. En el hogar todos ven
-              todas las tarjetas.
+              {people.length === 0 ? (
+                <>
+                  Todavía no hay personas registradas.{" "}
+                  <Link href="/people" className="underline underline-offset-2">
+                    Agrégalas en Personas
+                  </Link>{" "}
+                  para poder asignar dueños.
+                </>
+              ) : (
+                <>
+                  Solo para saber de quién es y poder filtrar. En el hogar todos
+                  ven todas las tarjetas.
+                </>
+              )}
             </p>
             <FieldError message={errorFor(state, "ownerPersonId")} />
           </div>
@@ -242,6 +255,27 @@ export function CardFormDialog({
                 Si el día de pago es menor o igual al de corte, se entiende que cae
                 en el mes siguiente. En meses cortos, el 31 se ajusta al último día.
               </p>
+
+              <div className="col-span-full grid gap-2">
+                <Label htmlFor={`${formId}-creditLimit`}>
+                  Límite de crédito{" "}
+                  <span className="text-muted-foreground font-normal">
+                    (opcional)
+                  </span>
+                </Label>
+                <Input
+                  id={`${formId}-creditLimit`}
+                  name="creditLimitCents"
+                  inputMode="decimal"
+                  defaultValue={
+                    card?.creditLimitCents != null
+                      ? (card.creditLimitCents / 100).toFixed(2)
+                      : ""
+                  }
+                  placeholder="50000.00"
+                />
+                <FieldError message={errorFor(state, "creditLimitCents")} />
+              </div>
             </div>
           )}
 

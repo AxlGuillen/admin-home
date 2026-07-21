@@ -1,28 +1,38 @@
 import { Badge } from "@/components/ui/badge";
 import { Card as UICard, CardContent } from "@/components/ui/card";
 import { PersonBadge, type Person } from "@/modules/people";
+import {
+  HOUSEHOLD_LOCALE,
+  HOUSEHOLD_TIME_ZONE,
+} from "@/shared/config/household";
 
 import {
   daysUntil,
   formatCivilDate,
   nextPaymentDate,
-  today,
+  todayIn,
 } from "../billing-cycle";
+import { formatMoney } from "../money";
 import { CARD_TYPE_LABELS } from "../schemas";
 import { isCreditCard, type Card } from "../types";
 import { CardActions } from "./card-actions";
 
+/**
+ * Esto se renderiza en el servidor, que en producción corre en UTC. Por eso la
+ * zona horaria es explícita: sin ella, a partir de las 6pm hora de México la
+ * cuenta de días saldría corrida.
+ */
 function nextPaymentLabel(card: Card): string | null {
   if (!isCreditCard(card)) return null;
 
-  const ref = today();
+  const ref = todayIn(HOUSEHOLD_TIME_ZONE);
   const due = nextPaymentDate(card.cutDay, card.paymentDay, ref);
   const days = daysUntil(due, ref);
 
   const when =
     days === 0 ? "es hoy" : days === 1 ? "es mañana" : `faltan ${days} días`;
 
-  return `Próximo pago: ${formatCivilDate(due)} — ${when}`;
+  return `Próximo pago: ${formatCivilDate(due, HOUSEHOLD_LOCALE)} — ${when}`;
 }
 
 export function CardItem({
@@ -74,6 +84,8 @@ export function CardItem({
           {isCreditCard(card) && (
             <p className="text-muted-foreground text-sm">
               Corte día {card.cutDay} · Pago día {card.paymentDay}
+              {card.creditLimitCents !== null &&
+                ` · Límite ${formatMoney(card.creditLimitCents)}`}
             </p>
           )}
 

@@ -22,6 +22,7 @@ export function toCard(row: CardRow): Card {
     cutDay: row.cut_day,
     paymentDay: row.payment_day,
     ownerPersonId: row.owner_person_id,
+    creditLimitCents: row.credit_limit_cents,
     archivedAt: row.archived_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

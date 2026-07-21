@@ -8,6 +8,7 @@ import {
   nextPaymentDate,
   paymentDateForCut,
   toISODate,
+  todayIn,
   type CivilDate,
 } from "./billing-cycle";
 
@@ -15,6 +16,35 @@ const d = (iso: string): CivilDate => {
   const [year, month, day] = iso.split("-").map(Number);
   return { year, month, day };
 };
+
+describe("todayIn", () => {
+  // El bug que motivó esta función: el servidor de producción corre en UTC, así
+  // que a partir de las 6pm hora de México ya cree que es el día siguiente.
+  it("da la fecha local, no la del servidor", () => {
+    const nocheEnMexico = new Date("2026-07-21T01:00:00Z"); // 19:00 del día 20 en CDMX
+
+    expect(toISODate(todayIn("America/Mexico_City", nocheEnMexico))).toBe(
+      "2026-07-20",
+    );
+    expect(toISODate(todayIn("UTC", nocheEnMexico))).toBe("2026-07-21");
+  });
+
+  it("acierta justo al cambiar de día", () => {
+    // 00:30 del 21 en CDMX = 06:30 UTC del 21.
+    const recienPasadaMedianoche = new Date("2026-07-21T06:30:00Z");
+    expect(
+      toISODate(todayIn("America/Mexico_City", recienPasadaMedianoche)),
+    ).toBe("2026-07-21");
+  });
+
+  it("cruza el fin de año según la zona", () => {
+    const anioNuevoUTC = new Date("2027-01-01T03:00:00Z"); // aún 31 de dic en CDMX
+    expect(toISODate(todayIn("America/Mexico_City", anioNuevoUTC))).toBe(
+      "2026-12-31",
+    );
+    expect(toISODate(todayIn("UTC", anioNuevoUTC))).toBe("2027-01-01");
+  });
+});
 
 describe("clampDay", () => {
   it("ajusta el 31 al último día en meses cortos", () => {

@@ -116,4 +116,42 @@ describe("cardInputSchema", () => {
   it("rechaza un tipo desconocido", () => {
     expect(form({ ...CREDIT, type: "prepago" }).success).toBe(false);
   });
+
+  describe("límite de crédito", () => {
+    const limit = (value: string | undefined) => {
+      const result = form({ ...CREDIT, creditLimitCents: value });
+      return result.success ? result.data.creditLimitCents : "error";
+    };
+
+    it("convierte pesos tecleados a centavos", () => {
+      expect(limit("50000")).toBe(5_000_000);
+      expect(limit("50000.50")).toBe(5_000_050);
+      expect(limit("$50,000.00")).toBe(5_000_000);
+    });
+
+    it("vacío es null, no cero", () => {
+      expect(limit("")).toBeNull();
+      expect(limit(undefined)).toBeNull();
+    });
+
+    it("un monto ilegible falla en vez de guardarse como sin límite", () => {
+      // El riesgo real: que "abc" se volviera null y la tarjeta quedara sin
+      // límite en silencio, en vez de avisarle al usuario.
+      expect(limit("abc")).toBe("error");
+    });
+
+    it("rechaza cero y negativos", () => {
+      expect(limit("0")).toBe("error");
+      expect(limit("-100")).toBe("error");
+    });
+
+    it("se limpia en débito, que no tiene línea de crédito", () => {
+      const result = form({
+        ...CREDIT,
+        type: "debito",
+        creditLimitCents: "50000",
+      });
+      expect(result.success && result.data.creditLimitCents).toBeNull();
+    });
+  });
 });

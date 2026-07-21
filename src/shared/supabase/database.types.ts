@@ -80,6 +80,7 @@ export type Database = {
           color: string | null
           created_at: string
           created_by: string | null
+          credit_limit_cents: number | null
           cut_day: number | null
           description: string | null
           household_id: string
@@ -97,6 +98,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           created_by?: string | null
+          credit_limit_cents?: number | null
           cut_day?: number | null
           description?: string | null
           household_id: string
@@ -114,6 +116,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           created_by?: string | null
+          credit_limit_cents?: number | null
           cut_day?: number | null
           description?: string | null
           household_id?: string
@@ -135,11 +138,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "home_finance_cards_owner_person_id_fkey"
-            columns: ["owner_person_id"]
+            foreignKeyName: "home_finance_cards_owner_fkey"
+            columns: ["household_id", "owner_person_id"]
             isOneToOne: false
             referencedRelation: "home_people"
-            referencedColumns: ["id"]
+            referencedColumns: ["household_id", "id"]
           },
         ]
       }

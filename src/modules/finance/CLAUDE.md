@@ -55,14 +55,27 @@ este módulo porque lo van a compartir todos.
 7. **`owner_person_id` es una etiqueta, no un permiso.** Dice de quién es la tarjeta y
    permite filtrar; **no** restringe quién la ve. Todos los miembros del hogar ven todas
    las tarjetas. Es distinto de `created_by`, que es quién la registró y no cambia.
-   La FK es `on delete set null`: borrar a una persona deja sus tarjetas sin dueño,
-   nunca las borra.
+   - La FK es **compuesta** `(household_id, owner_person_id)`: obliga a que el dueño sea
+     del mismo hogar. Con una FK simple se podía apuntar a una persona de otro hogar
+     (verificado contra la BD antes de arreglarlo).
+   - `on delete set null (owner_person_id)` — con la lista de columnas, porque sin ella
+     Postgres intentaría anular también `household_id`, que es NOT NULL, y borrar a una
+     persona reventaría. Borrar a alguien deja sus tarjetas sin dueño, nunca las borra.
+8. **`credit_limit_cents` solo aplica a crédito**, en centavos, y siempre > 0. Dos CHECK
+   lo hacen cumplir. El formulario acepta pesos ("$50,000.00") y `cardInputSchema`
+   convierte a centavos; si el texto es ilegible **falla** en vez de guardar null, para
+   que la tarjeta no quede sin límite en silencio.
 6. Toda action llama `requireHousehold()` antes de tocar la BD. Las Server Actions son
    endpoints HTTP: se pueden invocar sin pasar por el layout.
 
 ## Reglas del ciclo de facturación
 
-Viven en `billing-cycle.ts`, con tests. Las dos que se olvidan siempre:
+Viven en `billing-cycle.ts`, con tests. Las tres que se olvidan siempre:
+
+- **Zona horaria explícita.** No existe un `today()` sin zona, a propósito. El servidor
+  de producción corre en UTC: usar la hora del proceso hacía que a partir de las 6pm
+  hora de México la app dijera un día menos, y que el mismo día del pago lo diera por
+  vencido. Usa `todayIn(HOUSEHOLD_TIME_ZONE)` de `@/shared/config/household`.
 
 - **Meses cortos**: corte el 31 en febrero es el 28 (o 29). Se ajusta, no se desborda.
 - **En qué mes cae el pago**: si `paymentDay > cutDay`, mismo mes que el corte
@@ -79,8 +92,9 @@ es el día 5" no tiene hora ni zona horaria, y meter `Date` ahí introduce bugs 
   "mis tarjetas"; separarlos duplicaría CRUD y pantallas sin ganar nada.
 - **Día fijo de pago** (`payment_day`) en vez de "N días después del corte". Elegido por
   el usuario; obliga a la regla de "en qué mes cae" descrita arriba.
-- **Sin límite de crédito ni moneda por tarjeta** por ahora. Cuando entren los pagos hay
-  que decidir la moneda: `money.ts` ya la exige explícita en cada monto.
+- **Límite de crédito sí, moneda por tarjeta todavía no.** El límite entró porque
+  habilita el % de utilización en los estados de cuenta y era más barato ahora que
+  migrar después. La moneda sigue pendiente: `money.ts` ya la exige explícita.
 - **Las tarjetas son del hogar, no del usuario.** `household_id`, no `user_id`.
 
 ## Decisiones pendientes
@@ -90,6 +104,7 @@ Preguntar antes de implementar; no elegir por el usuario:
 1. **Corte vs. pago en el historial.** ¿Un registro por estado de cuenta (corte, límite,
    saldo total, pago mínimo, pago sin intereses) más los abonos contra él, o solo un pago
    por mes?
-2. **Moneda.** ¿Solo MXN o también USD? Afecta el esquema de pagos.
+2. **Moneda.** ¿Solo MXN o también USD? Afecta el esquema de pagos y `credit_limit_cents`,
+   que hoy asume una sola moneda.
 3. **Invitaciones al hogar.** Hoy agregar miembros se hace desde el dashboard: no hay
    políticas de insert en `home_household_members` a propósito.

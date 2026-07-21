@@ -54,6 +54,7 @@ export async function createCard(
       cut_day: input.cutDay,
       payment_day: input.paymentDay,
       owner_person_id: input.ownerPersonId,
+      credit_limit_cents: input.creditLimitCents,
     })
     .select("*")
     .single();
@@ -91,6 +92,7 @@ export async function updateCard(
       cut_day: input.cutDay,
       payment_day: input.paymentDay,
       owner_person_id: input.ownerPersonId,
+      credit_limit_cents: input.creditLimitCents,
     })
     .eq("id", id.data)
     .select("*")

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { parseMoney } from "./money";
+
 /**
  * Fuente de verdad del dominio de tarjetas.
  *
@@ -61,6 +63,25 @@ const baseCardFields = {
     blankToNull,
     z.uuid("Persona inválida").nullable(),
   ),
+  /**
+   * El usuario teclea pesos ("50,000" o "$50,000.00") y se guarda en centavos.
+   * La conversión vive aquí para que ninguna capa de arriba maneje pesos sueltos.
+   */
+  creditLimitCents: z.preprocess(
+    (value) => {
+      const blank = blankToNull(value);
+      if (blank === null) return null;
+      if (typeof blank !== "string") return blank;
+      // `NaN` en vez de null para que falle la validación y dé un mensaje,
+      // en lugar de guardarse silenciosamente como "sin límite".
+      return parseMoney(blank) ?? Number.NaN;
+    },
+    z
+      .number("Monto inválido")
+      .int("Monto inválido")
+      .positive("El límite debe ser mayor a cero")
+      .nullable(),
+  ),
 };
 
 /**
@@ -88,11 +109,12 @@ export const cardInputSchema = z
       });
     }
   })
-  // Débito no tiene ciclo: se limpia en vez de rechazar, porque el formulario
-  // puede traer valores viejos si el usuario cambió el tipo después de escribirlos.
+  // Débito no tiene ciclo ni línea de crédito: se limpian en vez de rechazar,
+  // porque el formulario puede traer valores viejos si el usuario cambió el tipo
+  // después de escribirlos.
   .transform((card) =>
     card.type === "debito"
-      ? { ...card, cutDay: null, paymentDay: null }
+      ? { ...card, cutDay: null, paymentDay: null, creditLimitCents: null }
       : card,
   );
 
@@ -113,6 +135,7 @@ export const cardSchema = z.object({
   cutDay: z.number().int().nullable(),
   paymentDay: z.number().int().nullable(),
   ownerPersonId: z.uuid().nullable(),
+  creditLimitCents: z.number().int().nullable(),
   archivedAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
