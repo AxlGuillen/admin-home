@@ -4,8 +4,11 @@
 #
 # NO bloquea el merge a propósito: es una opinión más, no una compuerta.
 #
-# Requiere el secret ANTHROPIC_API_KEY (ver README). Consume créditos de la API
-# de Anthropic por cada corrida, aparte de tu suscripción de Claude Code.
+# Autenticado con la suscripción de Claude Code, no con la API de Anthropic:
+# el token sale de `claude setup-token` y el consumo va contra tu plan.
+#
+# GitHub Actions corre en servidores de GitHub, así que no puede usar tu sesión
+# local — necesita una credencial propia. De ahí el secret.
 name: Claude Code Review
 
 on:
@@ -36,7 +39,7 @@ jobs:
     steps:
       - uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
           plugins: "code-review@claude-code-plugins"
           prompt: "/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}"

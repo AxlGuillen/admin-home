@@ -41,27 +41,33 @@ Dos workflows en `.github/workflows/`:
 
 ### Activar el review de Claude
 
-Requiere una **API key de la API de Anthropic** (console.anthropic.com), que se factura
-por tokens y es independiente de tu suscripción de Claude Code.
+Usa **tu suscripción de Claude Code** (Pro o Max), no la API de Anthropic. GitHub Actions
+corre en servidores de GitHub y no tiene tu sesión local, así que necesita un token propio.
 
 ```bash
 # 1. Instala la GitHub App en el repo
 #    https://github.com/apps/claude
 
-# 2. Guarda la API key como secret
-gh secret set ANTHROPIC_API_KEY --repo AxlGuillen/admin-home
+# 2. Genera el token desde tu suscripción (abre el navegador para autorizar)
+claude setup-token
+
+# 3. Guárdalo como secret; pega el token cuando lo pida
+gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo AxlGuillen/admin-home
 ```
 
-Alternativa: `/install-github-app` desde una terminal interactiva de `claude` hace los dos
-pasos guiado.
+El token **caduca**. Si un día el job falla con error de autenticación sin que hayas
+tocado nada, repite los pasos 2 y 3: es la causa más probable.
+
+Alternativa, si prefieres pagar por tokens en vez de consumir tu plan: crea una key en
+`console.anthropic.com`, guárdala como `ANTHROPIC_API_KEY` y cambia esa línea del workflow
+por `anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}`.
 
 > **No confundir con el Code Review gestionado de Anthropic**
 > (`claude.ai/admin-settings/claude-code`), que publica reviews inline sin workflow pero
-> **requiere plan Team o Enterprise**. Este repo usa la GitHub Action, que solo necesita
-> la API key.
+> **requiere plan Team o Enterprise**. Este repo usa la GitHub Action.
 
 El repo es público, así que el workflow ignora PRs de forks: sin esa guarda cualquiera
-podría quemar tus créditos abriendo PRs.
+podría consumir tu plan abriendo PRs.
 
 ## Módulos
 
