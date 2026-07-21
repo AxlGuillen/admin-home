@@ -116,6 +116,7 @@ export function toStatementTransaction(
     description: row.description,
     amountCents: row.amount_cents,
     kind: row.kind,
+    movementClass: row.movement_class,
     category: row.category,
     originalAmountCents: row.original_amount_cents,
     originalCurrency: row.original_currency,

@@ -132,6 +132,22 @@ export const TXN_KIND_LABELS: Record<TxnKind, string> = {
   refund: "Abono",
 };
 
+// Refines a charge; payments/refunds have no class. See migration 008.
+export const txnClassSchema = z.enum([
+  "regular",
+  "commission",
+  "msi_purchase",
+  "msi_installment",
+]);
+export type TxnClass = z.infer<typeof txnClassSchema>;
+
+export const TXN_CLASS_LABELS: Record<TxnClass, string> = {
+  regular: "Regular",
+  commission: "Comisión",
+  msi_purchase: "Compra a meses",
+  msi_installment: "Mensualidad",
+};
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const isoDate = z.string().regex(ISO_DATE, "Fecha inválida (YYYY-MM-DD)");
 
@@ -171,6 +187,7 @@ export const statementTransactionSchema = z.object({
   description: z.string(),
   amountCents: z.number().int(),
   kind: txnKindSchema,
+  movementClass: txnClassSchema.nullable(),
   category: z.string().nullable(),
   originalAmountCents: z.number().int().nullable(),
   originalCurrency: z.string().nullable(),
@@ -187,20 +204,41 @@ const pesosNullable = pesos
   .default(null)
   .transform((value) => (value === null ? null : pesosToCents(value)));
 
-export const statementTransactionImportSchema = z.object({
-  operationDate: isoDate.nullable().default(null),
-  chargeDate: isoDate.nullable().default(null),
-  description: z.string().trim().min(1, "Descripción obligatoria").max(200),
-  amount: pesos.nonnegative("El monto no puede ser negativo").transform(pesosToCents),
-  kind: txnKindSchema,
-  category: z.preprocess(
-    blankToNull,
-    z.string().trim().max(40).nullable(),
-  ).default(null),
-  originalAmount: pesosNullable,
-  originalCurrency: currencySchema.nullable().default(null),
-  fxRate: z.number().positive().nullable().default(null),
-});
+export const statementTransactionImportSchema = z
+  .object({
+    operationDate: isoDate.nullable().default(null),
+    chargeDate: isoDate.nullable().default(null),
+    description: z.string().trim().min(1, "Descripción obligatoria").max(200),
+    amount: pesos
+      .nonnegative("El monto no puede ser negativo")
+      .transform(pesosToCents),
+    kind: txnKindSchema,
+    movementClass: txnClassSchema.nullable().default(null),
+    category: z.preprocess(
+      blankToNull,
+      z.string().trim().max(40).nullable(),
+    ).default(null),
+    originalAmount: pesosNullable,
+    originalCurrency: currencySchema.nullable().default(null),
+    fxRate: z.number().positive().nullable().default(null),
+  })
+  .superRefine((txn, ctx) => {
+    const isCharge = txn.kind === "charge";
+    if (isCharge && txn.movementClass === null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["movementClass"],
+        message: "Un cargo necesita clase (regular, comisión, compra o mensualidad)",
+      });
+    }
+    if (!isCharge && txn.movementClass !== null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["movementClass"],
+        message: "Solo los cargos llevan clase",
+      });
+    }
+  });
 
 export const statementImportSchema = z.object({
   issuer: z.string().trim().min(1, "Banco obligatorio").max(60),

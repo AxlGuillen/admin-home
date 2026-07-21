@@ -157,6 +157,9 @@ export type Database = {
           household_id: string
           id: string
           kind: Database["public"]["Enums"]["home_finance_txn_kind"]
+          movement_class:
+            | Database["public"]["Enums"]["home_finance_txn_class"]
+            | null
           operation_date: string | null
           original_amount_cents: number | null
           original_currency: string | null
@@ -172,6 +175,9 @@ export type Database = {
           household_id: string
           id?: string
           kind: Database["public"]["Enums"]["home_finance_txn_kind"]
+          movement_class?:
+            | Database["public"]["Enums"]["home_finance_txn_class"]
+            | null
           operation_date?: string | null
           original_amount_cents?: number | null
           original_currency?: string | null
@@ -187,6 +193,9 @@ export type Database = {
           household_id?: string
           id?: string
           kind?: Database["public"]["Enums"]["home_finance_txn_kind"]
+          movement_class?:
+            | Database["public"]["Enums"]["home_finance_txn_class"]
+            | null
           operation_date?: string | null
           original_amount_cents?: number | null
           original_currency?: string | null
@@ -638,6 +647,11 @@ export type Database = {
     }
     Enums: {
       home_finance_card_type: "credito" | "debito"
+      home_finance_txn_class:
+        | "regular"
+        | "commission"
+        | "msi_purchase"
+        | "msi_installment"
       home_finance_txn_kind: "charge" | "payment" | "refund"
       home_household_role: "owner" | "member"
       ra_platform: "tiktok" | "instagram"
@@ -769,6 +783,12 @@ export const Constants = {
   public: {
     Enums: {
       home_finance_card_type: ["credito", "debito"],
+      home_finance_txn_class: [
+        "regular",
+        "commission",
+        "msi_purchase",
+        "msi_installment",
+      ],
       home_finance_txn_kind: ["charge", "payment", "refund"],
       home_household_role: ["owner", "member"],
       ra_platform: ["tiktok", "instagram"],

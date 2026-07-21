@@ -39,6 +39,7 @@ describe("statementImportSchema", () => {
           description: "ZOOM.COM",
           amount: 3527.88,
           kind: "charge",
+          movementClass: "regular",
           category: "suscripcion",
           originalAmount: 197.08,
           originalCurrency: "USD",
@@ -52,6 +53,33 @@ describe("statementImportSchema", () => {
     expect(txn.originalAmount).toBe(19708);
     expect(txn.originalCurrency).toBe("USD");
     expect(txn.fxRate).toBe(17.9);
+  });
+
+  it("requires a class on a charge and forbids it on a payment", () => {
+    expect(
+      statementImportSchema.safeParse({
+        ...base,
+        transactions: [{ description: "X", amount: 10, kind: "charge" }],
+      }).success,
+    ).toBe(false);
+
+    expect(
+      statementImportSchema.safeParse({
+        ...base,
+        transactions: [
+          { description: "PAGO", amount: 10, kind: "payment", movementClass: "regular" },
+        ],
+      }).success,
+    ).toBe(false);
+
+    expect(
+      statementImportSchema.safeParse({
+        ...base,
+        transactions: [
+          { description: "OXXO", amount: 10, kind: "charge", movementClass: "regular" },
+        ],
+      }).success,
+    ).toBe(true);
   });
 
   it("rejects a negative transaction amount", () => {

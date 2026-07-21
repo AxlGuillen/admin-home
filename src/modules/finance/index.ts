@@ -14,10 +14,12 @@ export {
   statementSchema,
   statementTransactionImportSchema,
   statementTransactionSchema,
+  TXN_CLASS_LABELS,
   TXN_KIND_LABELS,
+  txnClassSchema,
   txnKindSchema,
 } from "./schemas";
-export type { CardType, TxnKind } from "./schemas";
+export type { CardType, TxnClass, TxnKind } from "./schemas";
 export { isCreditCard } from "./types";
 export type {
   Card,
