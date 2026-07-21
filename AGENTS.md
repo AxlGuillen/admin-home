@@ -12,7 +12,7 @@ deploy de Next.js, dominios aislados en `src/modules/*`.
 Stack: Next.js 16 (App Router, Turbopack) · React 19 · TypeScript strict · Tailwind v4 ·
 shadcn/ui (base radix, preset nova) · Supabase (Postgres + Auth + RLS) · Zod v4 · Vitest.
 
-Idioma: **código y nombres de archivo en inglés, UI y comentarios de dominio en español.**
+Idioma: **código, nombres de archivo y comentarios en inglés; UI en español.**
 
 ## Regla de oro
 
@@ -47,7 +47,8 @@ Todo módulo en `src/modules/<nombre>/` tiene esta forma:
 
 | Archivo             | Qué va aquí                                                          |
 | ------------------- | -------------------------------------------------------------------- |
-| `index.ts`          | **Único punto de entrada público.** Re-exporta lo que otros pueden usar. |
+| `index.ts`          | Entry point público, **seguro en cliente y servidor**: schemas, tipos, actions y componentes. |
+| `server.ts`         | Entry point **solo de servidor**: las queries. Ver la nota de abajo.  |
 | `schemas.ts`        | Esquemas Zod. **Fuente de verdad** de los tipos del dominio.          |
 | `types.ts`          | Tipos inferidos de los schemas + tipos de fila de la BD.              |
 | `queries.ts`        | Lecturas (server-only). Devuelven datos ya tipados.                   |
@@ -65,22 +66,71 @@ shared →  shared · lib
 lib    →  lib          (funciones puras, cero imports del proyecto)
 ```
 
-Nunca importes `@/modules/finance/queries` desde fuera de `finance`. Usa `@/modules/finance`.
-Si necesitas algo que `index.ts` no exporta, expórtalo ahí primero — de forma explícita.
+Nunca importes `@/modules/finance/queries` desde fuera de `finance`. Usa uno de los dos
+entry points. Si necesitas algo que no exportan, expórtalo ahí primero — de forma explícita.
+
+### Por qué dos entry points
+
+`queries.ts` importa `server-only`. Si `index.ts` lo re-exportara, **cualquier Client
+Component que importe el módulo arrastraría código de servidor al bundle del navegador y
+el build falla** — con un error que apunta a Supabase y no a la causa real.
+
+- Server Components y Server Actions → `@/modules/<nombre>/server`
+- Client Components, tipos, schemas, componentes → `@/modules/<nombre>`
+
+Las Server Actions sí van en `index.ts`: `"use server"` hace que Next las reemplace por
+un stub RPC en el cliente, así que no arrastran nada.
 
 ## Reglas no negociables
 
 1. **Zod primero.** Un campo nuevo se define en `schemas.ts` antes que en la BD o el form.
    El tipo se infiere con `z.infer`, nunca se escribe a mano.
 2. **Toda Server Action valida su input con Zod** antes de tocar la BD. Sin excepciones.
-3. **RLS siempre.** Cada tabla `home_*` tiene RLS activo y política ligada a `auth.uid()`.
-   El código nunca es la única barrera de seguridad.
+3. **RLS siempre.** Cada tabla `home_*` tiene RLS activo y política ligada al hogar del
+   usuario. El código nunca es la única barrera de seguridad.
+   - Los datos pertenecen al **hogar** (`household_id`), no al usuario.
+   - Las políticas usan `home_private.user_household_ids()`. Vive en un schema privado
+     para no quedar expuesta como RPC, y es `SECURITY DEFINER` para evitar la recursión
+     infinita de RLS cuando una política consulta su propia tabla.
+   - **Tener sesión no es tener acceso**: `auth.users` es compartido con las otras apps
+     de este proyecto de Supabase. Usa `requireHousehold()`, no `requireUser()`.
 4. **Nada de service_role en el cliente.** La app solo usa la publishable key.
 5. **Prefijo `home_` en todas las tablas.** La BD de Supabase es compartida con otros
    proyectos (`ra_`, `adala_`). Sin prefijo hay colisión.
 6. **Server Components por defecto.** `"use client"` solo en hojas que necesiten estado o eventos.
 7. **`npm run typecheck` y `npm run lint` deben pasar** antes de dar una tarea por terminada.
 8. **Dinero en centavos** (`integer`), nunca `float`. Moneda explícita en cada monto.
+   Los formularios aceptan pesos y convierten en el schema; de ahí para adentro,
+   centavos.
+9. **Los datos son del hogar, no de la persona.** `home_people` son etiquetas para saber
+   de quién es cada cosa y filtrar; no restringen quién ve qué. Todos los miembros del
+   hogar ven y editan todo.
+10. **Nunca uses la hora del proceso para saber qué día es.** El servidor de producción
+    corre en UTC y las páginas se renderizan ahí, así que `new Date().getDate()` da un
+    día equivocado a partir de las 6pm hora de México. Usa `HOUSEHOLD_TIME_ZONE` de
+    `@/shared/config/household`.
+11. **Si una regla se puede hacer cumplir en la BD, va en la BD.** Las FKs compuestas y
+    los CHECK vuelven imposible el estado inválido; validar solo en el código lo deja
+    dependiendo de que nadie se equivoque. El schema de Zod es para dar buenos mensajes
+    de error, no para ser la única defensa.
+12. **Casi nada de comentarios.** El código se explica solo: nombres claros,
+    funciones chicas, tipos. Un comentario solo se justifica cuando explica un
+    *por qué* no obvio (una decisión, un workaround, una restricción externa),
+    nunca para describir lo que el código ya dice. Cuando haga falta, en inglés
+    y en una línea. Nada de encabezados narrativos ni bloques paso a paso.
+
+## Rutas
+
+Cada ruta del área protegida necesita su `loading.tsx` con esqueletos que **espejeen el
+layout real** (si cambias el componente, cambia el esqueleto). `(app)/error.tsx` cubre
+los errores de todas: no hace falta uno por ruta salvo que quieras un mensaje distinto.
+
+## Iconos
+
+`lucide-react` es la base. `@animateicons/react/lucide` tiene versiones animadas de unos
+248 iconos de Lucide — **no del set completo**: `Pencil`, `Archive` y `RotateCcw`, por
+ejemplo, no están. Usa el animado donde exista y la animación aporte (botones de acción),
+y `lucide-react` para el resto. Se ven igual porque el set animado *es* Lucide.
 
 ## Comandos
 

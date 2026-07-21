@@ -5,13 +5,7 @@ import { env } from "@/shared/config/env";
 
 import type { Database } from "./database.types";
 
-/**
- * Refresca el token de sesión en cada request y propaga las cookies nuevas.
- * Lo llama `proxy.ts` en la raíz (lo que en Next 15 y antes era `middleware.ts`).
- *
- * Ojo: esto es un chequeo optimista para redirigir rápido. La seguridad real la
- * da RLS en Postgres, no este archivo.
- */
+// Optimistic session refresh for fast redirects; real security is RLS in Postgres, not this file.
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -36,8 +30,7 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // No metas código entre `createServerClient` y `getUser()`: un return temprano
-  // aquí deja la sesión sin refrescar y provoca logouts aleatorios.
+  // Don't add code between createServerClient and getUser(): an early return here leaves the session unrefreshed and causes random logouts.
   const {
     data: { user },
   } = await supabase.auth.getUser();

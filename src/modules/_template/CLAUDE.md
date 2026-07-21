@@ -9,11 +9,14 @@ Una o dos frases: qué problema del hogar resuelve este módulo y qué queda fue
 
 ## Contrato público
 
-Lo que exporta `index.ts`. Nada más de este módulo puede importarse desde fuera.
+Dos entry points, y nada más del módulo puede importarse desde fuera:
 
-| Export | Tipo | Para qué |
-| ------ | ---- | -------- |
-|        |      |          |
+- `index.ts` — seguro en cliente y servidor: schemas, tipos, actions, componentes.
+- `server.ts` — solo servidor: las queries (importan `server-only`).
+
+| Export | Dónde | Para qué |
+| ------ | ----- | -------- |
+|        |       |          |
 
 ## Tablas
 

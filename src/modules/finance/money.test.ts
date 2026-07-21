@@ -31,7 +31,7 @@ describe("parseMoney", () => {
 
 describe("formatMoney", () => {
   it("formatea centavos como pesos", () => {
-    // Intl usa espacio no separable en algunos runtimes; normalizamos.
+    // Intl uses a non-breaking space in some runtimes; normalize it.
     expect(formatMoney(123450).replace(/ /g, " ")).toBe("$1,234.50");
   });
 

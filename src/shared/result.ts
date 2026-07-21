@@ -1,9 +1,4 @@
-/**
- * Resultado de una Server Action. Devolver errores en vez de lanzarlos hace que
- * el formulario del cliente pueda pintarlos sin reventar el árbol de React.
- *
- * `fieldErrors` sale directo de `z.flattenError(err).fieldErrors`.
- */
+// Return errors instead of throwing so the client form can render them without crashing React's tree.
 export type ActionResult<T = void> =
   | { ok: true; data: T }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };

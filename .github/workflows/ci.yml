@@ -1,0 +1,38 @@
+# Make blocking: Settings → Branches → main → require the "check" status check.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck + lint + tests
+        run: npm run check
+
+      # `check` doesn't cover the build; prerender errors only surface here.
+      - name: Build
+        run: npm run build
+        # Placeholder values, not secrets: the build only needs env.ts to validate, it never queries Supabase.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
