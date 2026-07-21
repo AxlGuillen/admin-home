@@ -74,6 +74,141 @@ export type Database = {
         }
         Relationships: []
       }
+      home_finance_account_movements: {
+        Row: {
+          amount_cents: number
+          balance_cents: number | null
+          category: string | null
+          created_at: string
+          description: string
+          direction: Database["public"]["Enums"]["home_finance_account_direction"]
+          household_id: string
+          id: string
+          liquidation_date: string | null
+          operation_date: string | null
+          statement_id: string
+        }
+        Insert: {
+          amount_cents: number
+          balance_cents?: number | null
+          category?: string | null
+          created_at?: string
+          description: string
+          direction: Database["public"]["Enums"]["home_finance_account_direction"]
+          household_id: string
+          id?: string
+          liquidation_date?: string | null
+          operation_date?: string | null
+          statement_id: string
+        }
+        Update: {
+          amount_cents?: number
+          balance_cents?: number | null
+          category?: string | null
+          created_at?: string
+          description?: string
+          direction?: Database["public"]["Enums"]["home_finance_account_direction"]
+          household_id?: string
+          id?: string
+          liquidation_date?: string | null
+          operation_date?: string | null
+          statement_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_finance_account_mov_stmt_fkey"
+            columns: ["statement_id", "household_id"]
+            isOneToOne: false
+            referencedRelation: "home_finance_account_statements"
+            referencedColumns: ["id", "household_id"]
+          },
+          {
+            foreignKeyName: "home_finance_account_movements_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "home_households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      home_finance_account_statements: {
+        Row: {
+          average_balance_cents: number | null
+          card_id: string
+          closing_balance_cents: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          cut_date: string
+          days_in_period: number | null
+          deposits_cents: number
+          deposits_count: number
+          household_id: string
+          id: string
+          opening_balance_cents: number
+          period_end: string
+          period_start: string
+          updated_at: string
+          withdrawals_cents: number
+          withdrawals_count: number
+        }
+        Insert: {
+          average_balance_cents?: number | null
+          card_id: string
+          closing_balance_cents?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          cut_date: string
+          days_in_period?: number | null
+          deposits_cents?: number
+          deposits_count?: number
+          household_id: string
+          id?: string
+          opening_balance_cents?: number
+          period_end: string
+          period_start: string
+          updated_at?: string
+          withdrawals_cents?: number
+          withdrawals_count?: number
+        }
+        Update: {
+          average_balance_cents?: number | null
+          card_id?: string
+          closing_balance_cents?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          cut_date?: string
+          days_in_period?: number | null
+          deposits_cents?: number
+          deposits_count?: number
+          household_id?: string
+          id?: string
+          opening_balance_cents?: number
+          period_end?: string
+          period_start?: string
+          updated_at?: string
+          withdrawals_cents?: number
+          withdrawals_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_finance_account_statements_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "home_households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "home_finance_account_stmt_card_fkey"
+            columns: ["card_id", "household_id"]
+            isOneToOne: false
+            referencedRelation: "home_finance_cards"
+            referencedColumns: ["id", "household_id"]
+          },
+        ]
+      }
       home_finance_cards: {
         Row: {
           archived_at: string | null
@@ -646,6 +781,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      home_finance_account_direction: "deposit" | "withdrawal"
       home_finance_card_type: "credito" | "debito"
       home_finance_txn_class:
         | "regular"
@@ -782,6 +918,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      home_finance_account_direction: ["deposit", "withdrawal"],
       home_finance_card_type: ["credito", "debito"],
       home_finance_txn_class: [
         "regular",

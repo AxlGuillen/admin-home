@@ -43,6 +43,8 @@ Dos entry points: `index.ts` (cliente + servidor) y `server.ts` (solo servidor).
 | `home_finance_cards` | Tarjetas del hogar, débito y crédito juntas. | miembros del `household_id` |
 | `home_finance_statements` | Cabecera del estado de cuenta, 1 por `(card_id, cut_date)`. | miembros del `household_id` |
 | `home_finance_statement_transactions` | Movimientos de un estado de cuenta. | miembros del `household_id` |
+| `home_finance_account_statements` | Estado de cuenta de una cuenta de **débito** (saldo, depósitos, retiros). | miembros del `household_id` |
+| `home_finance_account_movements` | Movimientos de una cuenta de débito (`deposit`/`withdrawal`). | miembros del `household_id` |
 
 El hogar vive en `home_households` / `home_household_members` (migración 003), fuera de
 este módulo porque lo van a compartir todos.
@@ -134,6 +136,20 @@ es el día 5" no tiene hora ni zona horaria, y meter `Date` ahí introduce bugs 
 - **Validación de carga:** los cargos con `movement_class='regular'` deben sumar exactamente
   `regular_charges_cents` del header (el "Cargos regulares (no a meses)" del PDF). Es el
   check que se corre por banco antes de dar por buena una extracción.
+
+## Cuentas de débito
+
+- **Modelo propio, no el de crédito.** Una cuenta de débito no tiene ciclo de pago ni
+  límite; meterla en `home_finance_statements` llenaría media tabla de nulos mentira. Va
+  en `home_finance_account_statements` + `_movements`: saldo inicial/final, depósitos y
+  retiros, y movimientos con `direction` (`deposit`/`withdrawal`) y saldo corriente.
+- **Es la fuente de flujo de caja del hogar.** Aquí caen los ingresos y de aquí salen los
+  pagos a las tarjetas de crédito (los `PAGO TARJETA DE CREDITO` / `SPEI ENVIADO` cruzan
+  con los pagos que muestran los estados de cuenta de crédito).
+- **Validación de carga:** los movimientos `deposit` deben cuadrar en conteo y suma con
+  `deposits_count`/`deposits_cents` del header, y los `withdrawal` con los suyos. El PDF
+  no dice en texto si un monto es cargo o abono: se decide por la **posición X** de la
+  columna (extracción con coordenadas).
 
 ## Decisiones pendientes
 

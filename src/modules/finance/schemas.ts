@@ -240,6 +240,48 @@ export const statementTransactionImportSchema = z
     }
   });
 
+export const accountDirectionSchema = z.enum(["deposit", "withdrawal"]);
+export type AccountDirection = z.infer<typeof accountDirectionSchema>;
+
+export const ACCOUNT_DIRECTION_LABELS: Record<AccountDirection, string> = {
+  deposit: "Depósito",
+  withdrawal: "Retiro",
+};
+
+export const accountStatementSchema = z.object({
+  id: z.uuid(),
+  householdId: z.uuid(),
+  cardId: z.uuid(),
+  periodStart: z.string(),
+  periodEnd: z.string(),
+  cutDate: z.string(),
+  daysInPeriod: z.number().int().nullable(),
+  currency: z.string(),
+  openingBalanceCents: z.number().int(),
+  depositsCents: z.number().int(),
+  depositsCount: z.number().int(),
+  withdrawalsCents: z.number().int(),
+  withdrawalsCount: z.number().int(),
+  closingBalanceCents: z.number().int(),
+  averageBalanceCents: z.number().int().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const accountMovementSchema = z.object({
+  id: z.uuid(),
+  householdId: z.uuid(),
+  statementId: z.uuid(),
+  operationDate: z.string().nullable(),
+  liquidationDate: z.string().nullable(),
+  description: z.string(),
+  amountCents: z.number().int(),
+  direction: accountDirectionSchema,
+  balanceCents: z.number().int().nullable(),
+  category: z.string().nullable(),
+  createdAt: z.string(),
+});
+
 export const statementImportSchema = z.object({
   issuer: z.string().trim().min(1, "Banco obligatorio").max(60),
   product: z.string().trim().min(1, "Nombre de la tarjeta obligatorio").max(60),

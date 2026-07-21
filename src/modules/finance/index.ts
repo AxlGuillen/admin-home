@@ -6,6 +6,10 @@ export {
   updateCard,
 } from "./actions";
 export {
+  ACCOUNT_DIRECTION_LABELS,
+  accountDirectionSchema,
+  accountMovementSchema,
+  accountStatementSchema,
   CARD_TYPE_LABELS,
   cardInputSchema,
   cardSchema,
@@ -19,9 +23,12 @@ export {
   txnClassSchema,
   txnKindSchema,
 } from "./schemas";
-export type { CardType, TxnClass, TxnKind } from "./schemas";
+export type { AccountDirection, CardType, TxnClass, TxnKind } from "./schemas";
 export { isCreditCard } from "./types";
 export type {
+  AccountMovement,
+  AccountStatement,
+  AccountStatementWithMovements,
   Card,
   CardInput,
   CreditCard,

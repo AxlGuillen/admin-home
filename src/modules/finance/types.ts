@@ -1,6 +1,8 @@
 import type { z } from "zod";
 
 import type {
+  accountMovementSchema,
+  accountStatementSchema,
   cardInputSchema,
   cardSchema,
   statementImportSchema,
@@ -20,6 +22,14 @@ export type StatementImport = z.infer<typeof statementImportSchema>;
 
 export type StatementWithTransactions = Statement & {
   transactions: StatementTransaction[];
+};
+
+export type AccountStatement = z.infer<typeof accountStatementSchema>;
+
+export type AccountMovement = z.infer<typeof accountMovementSchema>;
+
+export type AccountStatementWithMovements = AccountStatement & {
+  movements: AccountMovement[];
 };
 
 /** Credit card: the cycle is guaranteed by the DB CHECK. */

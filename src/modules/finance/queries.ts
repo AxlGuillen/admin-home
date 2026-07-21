@@ -5,6 +5,9 @@ import type { Tables } from "@/shared/supabase/database.types";
 import { createClient } from "@/shared/supabase/server";
 
 import type {
+  AccountMovement,
+  AccountStatement,
+  AccountStatementWithMovements,
   Card,
   Statement,
   StatementTransaction,
@@ -14,6 +17,8 @@ import type {
 type CardRow = Tables<"home_finance_cards">;
 type StatementRow = Tables<"home_finance_statements">;
 type StatementTransactionRow = Tables<"home_finance_statement_transactions">;
+type AccountStatementRow = Tables<"home_finance_account_statements">;
+type AccountMovementRow = Tables<"home_finance_account_movements">;
 
 /** DB is snake_case, the domain camelCase; the translation lives only here. */
 export function toCard(row: CardRow): Card {
@@ -192,5 +197,92 @@ export async function getStatementWithTransactions(
   return {
     ...toStatement(statement),
     transactions: transactions.map(toStatementTransaction),
+  };
+}
+
+export function toAccountStatement(row: AccountStatementRow): AccountStatement {
+  return {
+    id: row.id,
+    householdId: row.household_id,
+    cardId: row.card_id,
+    periodStart: row.period_start,
+    periodEnd: row.period_end,
+    cutDate: row.cut_date,
+    daysInPeriod: row.days_in_period,
+    currency: row.currency,
+    openingBalanceCents: row.opening_balance_cents,
+    depositsCents: row.deposits_cents,
+    depositsCount: row.deposits_count,
+    withdrawalsCents: row.withdrawals_cents,
+    withdrawalsCount: row.withdrawals_count,
+    closingBalanceCents: row.closing_balance_cents,
+    averageBalanceCents: row.average_balance_cents,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function toAccountMovement(row: AccountMovementRow): AccountMovement {
+  return {
+    id: row.id,
+    householdId: row.household_id,
+    statementId: row.statement_id,
+    operationDate: row.operation_date,
+    liquidationDate: row.liquidation_date,
+    description: row.description,
+    amountCents: row.amount_cents,
+    direction: row.direction,
+    balanceCents: row.balance_cents,
+    category: row.category,
+    createdAt: row.created_at,
+  };
+}
+
+export async function listAccountStatements(
+  cardId: string,
+): Promise<AccountStatement[]> {
+  await requireHousehold();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("home_finance_account_statements")
+    .select("*")
+    .eq("card_id", cardId)
+    .order("cut_date", { ascending: false });
+
+  if (error)
+    throw new Error(`No se pudieron cargar los estados de cuenta: ${error.message}`);
+  return data.map(toAccountStatement);
+}
+
+export async function getAccountStatementWithMovements(
+  id: string,
+): Promise<AccountStatementWithMovements | null> {
+  await requireHousehold();
+  const supabase = await createClient();
+
+  const { data: statement, error } = await supabase
+    .from("home_finance_account_statements")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error)
+    throw new Error(`No se pudo cargar el estado de cuenta: ${error.message}`);
+  if (!statement) return null;
+
+  const { data: movements, error: movError } = await supabase
+    .from("home_finance_account_movements")
+    .select("*")
+    .eq("statement_id", id)
+    .order("operation_date", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (movError)
+    throw new Error(`No se pudieron cargar los movimientos: ${movError.message}`);
+
+  return {
+    ...toAccountStatement(statement),
+    movements: movements.map(toAccountMovement),
   };
 }
