@@ -13,7 +13,19 @@ export default async function LoginPage({
   const safeNext = next?.startsWith("/") && !next.startsWith("//") ? next : "/";
 
   return (
-    <main className="flex min-h-svh items-center justify-center p-6">
+    <main className="grid-bg-strong relative grid min-h-svh place-items-center overflow-hidden p-6">
+      <div
+        aria-hidden
+        className="ah-glow pointer-events-none absolute top-1/2 left-1/2 size-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[20px]"
+        style={{
+          background:
+            "radial-gradient(circle,color-mix(in srgb,var(--accent-solid) 28%,transparent),transparent 62%)",
+        }}
+      />
+      <div className="text-muted-foreground absolute top-6 left-8 flex items-center gap-2.5 font-[family-name:var(--font-barlow-condensed)] text-[15px] tracking-[0.12em]">
+        <span className="border-primary block size-2 border-[1.5px]" />
+        ADMIN·HOME
+      </div>
       <LoginForm next={safeNext} />
     </main>
   );
