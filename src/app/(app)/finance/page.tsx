@@ -1,13 +1,8 @@
 import Link from "next/link";
-import { PlusIcon } from "@animateicons/react/lucide";
+import { BarChart3, Plus } from "lucide-react";
 
+import { PageHeading } from "@/components/blueprint";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { CardFormDialog, CardItem } from "@/modules/finance";
 import { listCards } from "@/modules/finance/server";
 import { listPeople } from "@/modules/people/server";
@@ -45,44 +40,52 @@ export default async function FinancePage({
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1">
-          <h1 className="text-2xl font-semibold">Finanzas</h1>
-          <p className="text-muted-foreground text-sm">
-            {showArchived
-              ? "Tarjetas archivadas."
-              : "Tarjetas de débito y crédito del hogar."}
-          </p>
-        </div>
-
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/finance/analisis">Análisis</Link>
-        </Button>
-
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={showArchived ? filterHref(owner) : `/finance?archived=1`}>
-            {showArchived ? "Ver activas" : "Ver archivadas"}
-          </Link>
-        </Button>
-
-        <CardFormDialog
-          people={people}
-          trigger={
-            <Button>
-              <PlusIcon className="size-4" />
-              Nueva tarjeta
+    <div className="ah-view">
+      <PageHeading
+        kicker="MÓDULO"
+        title="Finanzas"
+        subtitle={
+          showArchived
+            ? "Tarjetas archivadas."
+            : "Tarjetas de débito y crédito del hogar."
+        }
+        actions={
+          <>
+            <Button variant="secondary" asChild>
+              <Link href="/finance/analisis">
+                <BarChart3 className="size-[15px]" strokeWidth={1.5} />
+                Análisis
+              </Link>
             </Button>
-          }
-        />
-      </div>
+            <Button variant="secondary" asChild>
+              <Link
+                href={showArchived ? filterHref(owner) : `/finance?archived=1`}
+              >
+                {showArchived ? "Ver activas" : "Ver archivadas"}
+              </Link>
+            </Button>
+            <CardFormDialog
+              people={people}
+              trigger={
+                <Button>
+                  <Plus className="size-[15px]" strokeWidth={1.6} />
+                  Nueva tarjeta
+                </Button>
+              }
+            />
+          </>
+        }
+      />
 
       {people.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground text-sm">Dueño:</span>
+        <div className="mb-5.5 flex flex-wrap items-center gap-2">
+          <span className="text-muted-foreground mr-0.5 text-[13px]">
+            Dueño:
+          </span>
           <Button
-            variant={owner ? "ghost" : "secondary"}
+            variant={owner ? "secondary" : "default"}
             size="sm"
+            className="rounded-none"
             asChild
           >
             <Link href={filterHref()}>Todos</Link>
@@ -90,16 +93,18 @@ export default async function FinancePage({
           {people.map((person) => (
             <Button
               key={person.id}
-              variant={owner === person.id ? "secondary" : "ghost"}
+              variant={owner === person.id ? "default" : "secondary"}
               size="sm"
+              className="rounded-none"
               asChild
             >
               <Link href={filterHref(person.id)}>{person.name}</Link>
             </Button>
           ))}
           <Button
-            variant={owner === NO_OWNER ? "secondary" : "ghost"}
+            variant={owner === NO_OWNER ? "default" : "secondary"}
             size="sm"
+            className="rounded-none"
             asChild
           >
             <Link href={filterHref(NO_OWNER)}>Sin dueño</Link>
@@ -108,26 +113,24 @@ export default async function FinancePage({
       )}
 
       {visible.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {showArchived
-                ? "No hay tarjetas archivadas"
-                : owner
-                  ? "Ninguna tarjeta con ese dueño"
-                  : "Aún no hay tarjetas"}
-            </CardTitle>
-            <CardDescription>
-              {showArchived
-                ? "Las tarjetas que archives aparecerán aquí."
-                : owner
-                  ? "Prueba con otro dueño o quita el filtro."
-                  : "Registra tu primera tarjeta para empezar a llevar el control."}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <div className="blueprint bg-card relative p-6">
+          <h3 className="mb-1 text-lg">
+            {showArchived
+              ? "No hay tarjetas archivadas"
+              : owner
+                ? "Ninguna tarjeta con ese dueño"
+                : "Aún no hay tarjetas"}
+          </h3>
+          <p className="text-muted-foreground text-sm">
+            {showArchived
+              ? "Las tarjetas que archives aparecerán aquí."
+              : owner
+                ? "Prueba con otro dueño o quita el filtro."
+                : "Registra tu primera tarjeta para empezar a llevar el control."}
+          </p>
+        </div>
       ) : (
-        <div className="grid gap-3">
+        <div className="flex flex-col gap-3">
           {visible.map((card) => (
             <CardItem
               key={card.id}

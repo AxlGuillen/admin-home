@@ -1,5 +1,7 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+import { PageHeading } from "@/components/blueprint";
 import { Button } from "@/components/ui/button";
 import { FinanceOverviewDashboard } from "@/modules/finance";
 import { getFinanceOverview } from "@/modules/finance/server";
@@ -10,18 +12,23 @@ export default async function FinanceAnalysisPage() {
   const overview = await getFinanceOverview();
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1">
-          <h1 className="text-2xl font-semibold">Análisis</h1>
-          <p className="text-muted-foreground text-sm">
-            En qué se va el dinero del hogar y dónde hay fugas.
-          </p>
-        </div>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/finance">Ver tarjetas</Link>
-        </Button>
-      </div>
+    <div className="ah-view">
+      <Button
+        variant="ghost"
+        size="sm"
+        asChild
+        className="mb-3.5 h-auto px-0 py-1"
+      >
+        <Link href="/finance">
+          <ArrowLeft className="size-4" strokeWidth={1.5} />
+          Finanzas
+        </Link>
+      </Button>
+      <PageHeading
+        kicker="FINANZAS"
+        title="Análisis"
+        subtitle="Consumo del hogar y fugas de capital, todos los meses."
+      />
 
       <FinanceOverviewDashboard data={overview} />
     </div>

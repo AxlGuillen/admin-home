@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -18,26 +19,29 @@ export default async function CardDetailPage({
   const { card } = detail;
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="ah-view">
+      <Button
+        variant="ghost"
+        size="sm"
+        asChild
+        className="mb-3.5 h-auto px-0 py-1"
+      >
+        <Link href="/finance">
+          <ArrowLeft className="size-4" strokeWidth={1.5} />
+          Finanzas
+        </Link>
+      </Button>
+
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <span
-          className="size-8 shrink-0 rounded-full"
-          style={{ background: card.color ?? "var(--chart-1)" }}
+          className="size-3.5 shrink-0 rounded-full"
+          style={{ background: card.color ?? "var(--cat-1)" }}
         />
-        <div className="flex-1">
-          <h1 className="flex items-center gap-2 text-2xl font-semibold">
-            {card.name}
-            <Badge variant="outline">
-              {card.isCredit ? "Crédito" : "Débito"}
-            </Badge>
-          </h1>
-          {card.issuer && (
-            <p className="text-muted-foreground text-sm">{card.issuer}</p>
-          )}
-        </div>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/finance/analisis">← Análisis</Link>
-        </Button>
+        <h1 className="text-4xl">{card.name}</h1>
+        <Badge variant="outline">{card.isCredit ? "Crédito" : "Débito"}</Badge>
+        {card.issuer && (
+          <span className="text-muted-foreground text-sm">{card.issuer}</span>
+        )}
       </div>
 
       <CardDetailDashboard data={detail} />

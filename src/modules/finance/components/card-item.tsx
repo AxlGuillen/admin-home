@@ -1,7 +1,8 @@
 import Link from "next/link";
 
+import { CreditCard } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
-import { Card as UICard, CardContent } from "@/components/ui/card";
 import { PersonBadge, type Person } from "@/modules/people";
 import {
   HOUSEHOLD_LOCALE,
@@ -45,57 +46,68 @@ export function CardItem({
   const isArchived = card.archivedAt !== null;
   const payment = nextPaymentLabel(card);
 
+  const color = card.color ?? "var(--muted-foreground)";
+
   return (
-    <UICard className={isArchived ? "opacity-60" : undefined}>
-      <CardContent className="flex items-start gap-3">
-        <span
-          aria-hidden
-          className="mt-1 size-3 shrink-0 rounded-full"
-          style={{ backgroundColor: card.color ?? "var(--muted-foreground)" }}
-        />
+    <div
+      className={`blueprint bg-card elev-sm relative flex items-start gap-4 px-5 py-4.5 transition-shadow hover:shadow-[var(--shadow-md)] ${isArchived ? "opacity-60" : ""}`}
+    >
+      <span
+        aria-hidden
+        className="border-divider mt-0.5 grid size-[38px] flex-none place-items-center border"
+        style={{
+          color,
+          background: `color-mix(in srgb, ${color} 12%, transparent)`,
+        }}
+      >
+        <CreditCard className="size-[18px]" strokeWidth={1.5} />
+      </span>
 
-        <div className="min-w-0 flex-1 space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/finance/${card.id}`}
-              className="leading-none font-medium hover:underline"
-            >
-              {card.name}
-            </Link>
-            <Badge variant="secondary">{CARD_TYPE_LABELS[card.type]}</Badge>
-            {isArchived && <Badge variant="outline">Archivada</Badge>}
-            {owner ? (
-              <PersonBadge person={owner} />
-            ) : (
-              <span className="text-muted-foreground text-sm">Sin dueño</span>
-            )}
-          </div>
-
-          {(card.issuer || card.lastFour) && (
-            <p className="text-muted-foreground text-sm">
-              {card.issuer}
-              {card.issuer && card.lastFour && " · "}
-              {card.lastFour && `•••• ${card.lastFour}`}
-            </p>
+      <div className="min-w-0 flex-1 space-y-1">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Link
+            href={`/finance/${card.id}`}
+            className="font-[family-name:var(--font-barlow-condensed)] text-lg leading-none hover:underline"
+          >
+            {card.name}
+          </Link>
+          <Badge variant="secondary">{CARD_TYPE_LABELS[card.type]}</Badge>
+          {isArchived && <Badge variant="outline">Archivada</Badge>}
+          {owner ? (
+            <PersonBadge person={owner} />
+          ) : (
+            <span className="text-muted-foreground text-xs">Sin dueño</span>
           )}
-
-          {card.description && (
-            <p className="text-muted-foreground text-sm">{card.description}</p>
-          )}
-
-          {isCreditCard(card) && (
-            <p className="text-muted-foreground text-sm">
-              Corte día {card.cutDay} · Pago día {card.paymentDay}
-              {card.creditLimitCents !== null &&
-                ` · Límite ${formatMoney(card.creditLimitCents)}`}
-            </p>
-          )}
-
-          {payment && <p className="text-sm font-medium">{payment}</p>}
         </div>
 
-        <CardActions card={card} people={people} />
-      </CardContent>
-    </UICard>
+        {(card.issuer || card.lastFour) && (
+          <p className="text-muted-foreground text-[13px]">
+            {card.issuer}
+            {card.issuer && card.lastFour && " · "}
+            {card.lastFour && `•••• ${card.lastFour}`}
+          </p>
+        )}
+
+        {card.description && (
+          <p className="text-muted-foreground text-[13px]">
+            {card.description}
+          </p>
+        )}
+
+        {isCreditCard(card) && (
+          <p className="text-muted-foreground text-[13px]">
+            Corte día {card.cutDay} · Pago día {card.paymentDay}
+            {card.creditLimitCents !== null &&
+              ` · Límite ${formatMoney(card.creditLimitCents)}`}
+          </p>
+        )}
+
+        {payment && (
+          <p className="text-primary text-[13px] font-medium">{payment}</p>
+        )}
+      </div>
+
+      <CardActions card={card} people={people} />
+    </div>
   );
 }
