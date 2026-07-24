@@ -1,5 +1,6 @@
 "use client";
 
+import { CreditCard, RefreshCw, Wallet } from "lucide-react";
 import Link from "next/link";
 import { Bar, BarChart, Cell, LabelList, Pie, PieChart, XAxis, YAxis } from "recharts";
 
@@ -101,7 +102,7 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
           y={Number(y) - 24}
           width={w}
           height={17}
-          rx={8.5}
+          rx={999}
           fill="var(--ink)"
         />
         <text
@@ -128,7 +129,7 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
         <Dominant
           label="Gasto total del periodo"
-          value={pesos(totals.spendCents)}
+          value={pesosShort(totals.spendCents)}
           hint={`${data.byMonth.length} meses de estados de cuenta`}
           chip={
             delta !== null && prev ? (
@@ -152,6 +153,9 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
             label="Deuda actual"
             value={pesosShort(totals.currentDebtCents)}
             hint={`de ${pesosShort(totals.limitCents)} de límite`}
+            icon={CreditCard}
+            family="credito"
+            step={3}
             ticks
           />
           <Gauge
@@ -162,7 +166,10 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
           <Kpi
             label="Suscripciones / mes"
             value={pesosShort(totals.subscriptionsPerMonthCents)}
-            chip={<Chip tone="neutral">{data.subscriptions.length} activas</Chip>}
+            icon={RefreshCw}
+            family="suscrip"
+            step={2}
+            hint={`${data.subscriptions.length} activas`}
           />
           <Kpi
             label="Balance débito"
@@ -171,6 +178,9 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
                 ? pesosShort(totals.debitBalanceCents)
                 : "—"
             }
+            icon={Wallet}
+            family="debito"
+            step={1}
           />
         </div>
       </div>
@@ -243,7 +253,11 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
           </div>
         </Panel>
 
-        <Panel title="Gasto por mes" subtitle="Cargos regulares del hogar.">
+        <Panel
+          title="Gasto por mes"
+          subtitle="Cargos regulares del hogar."
+          className="m-trend"
+        >
           <ChartContainer
             config={{ spend: { label: "Gasto", color: "var(--brand)" } }}
             className="h-[190px] w-full"
@@ -268,7 +282,7 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
                     y1="0"
                     x2="0"
                     y2="6"
-                    stroke="var(--ink-3)"
+                    stroke="var(--brand)"
                     strokeWidth="3"
                   />
                 </pattern>
@@ -298,9 +312,7 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
                     fill={
                       m.month === currentMonth
                         ? "url(#fo-progress)"
-                        : m.spend === maxSpend
-                          ? "var(--brand)"
-                          : "var(--ink-3)"
+                        : "var(--ink-3)"
                     }
                   />
                 ))}
@@ -344,11 +356,16 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
                       )}
                     </Link>
                     <span className="text-ink-mut flex items-center gap-2">
+                      {pct !== null && pct >= 100 && (
+                        <Chip tone="danger">SOBREGIRO</Chip>
+                      )}
                       {pct !== null &&
                         (over ? (
-                          <Chip tone="danger">{pct}%</Chip>
+                          <Chip tone="danger" numeric>
+                            {pct}%
+                          </Chip>
                         ) : (
-                          <span className="tnum">{pct}%</span>
+                          <span className="tnum text-[11px]">{pct}%</span>
                         ))}
                       <span className="tnum">
                         {pesos(u.debtCents)}
@@ -402,7 +419,7 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
                 className="flex items-center justify-between text-xs"
               >
                 <span className="text-dark-fg/75">{f.label}</span>
-                <span className="tnum text-danger font-semibold">
+                <span className="tnum text-danger-on-dark font-semibold">
                   {pesos(f.cents)}
                 </span>
               </div>

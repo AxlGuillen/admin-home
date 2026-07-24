@@ -157,7 +157,7 @@
 
   /* ── SKIN · personas (nunca marca ni estado) ── */
   --p-1: #c2703d;
-  --p-2: #7a5aa8;
+  --p-2: #a85a8e;
   --p-3: #2e7d6b;
 
   /* ── SKIN · danger legible sobre superficie oscura (4.9:1) ── */
@@ -281,6 +281,19 @@
     mix-blend-mode: multiply;
     opacity: 0.35;
   }
+  /* Lavado de marca por encima del grano: es luz de ambiente, no suciedad. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      85% 80% at 100% -5%,
+      var(--skin-glow),
+      transparent 58%
+    );
+  }
   body > * {
     position: relative;
     z-index: 1;
@@ -346,6 +359,18 @@
   mix-blend-mode: soft-light;
   opacity: 0.4;
 }
+/* Tipo 5 · escalones tonales: secuencia 8% -> 14% -> 20% entre la card base y
+   la dominante. Van en fila y en orden, nunca salpicados. */
+.m-step-1 {
+  background: var(--step-1);
+}
+.m-step-2 {
+  background: var(--step-2);
+}
+.m-step-3 {
+  background: var(--step-3);
+}
+
 /* Tipo 4 · card con tratamiento diferenciado: gráfica a sangre sobre lavado
    de marca. La serie se pega al fondo, sin padding inferior. */
 .m-trend {
@@ -386,11 +411,11 @@
 /* ── Elemento firma · regleta de ticks (SKIN) ── */
 .ticks {
   height: 10px;
-  background: repeating-linear-gradient(
-    90deg,
-    currentColor 0 1px,
-    transparent 1px 6px
-  );
+  background:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 30px)
+      bottom / 100% 10px no-repeat,
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 6px)
+      bottom / 100% 6px no-repeat;
   -webkit-mask-image: linear-gradient(90deg, #000 58%, transparent);
   mask-image: linear-gradient(90deg, #000 58%, transparent);
 }

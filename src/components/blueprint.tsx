@@ -28,25 +28,55 @@ const chipTone: Record<ChipTone, string> = {
   onBrand: "bg-white/20 text-white",
 };
 
-/** Chip de estado/delta (DESIGN §1: 9-10px, 700-800, Display). */
+/** Chip de estado (DESIGN §6: padding 5px 9px, 700/9px). */
 export function Chip({
   children,
   tone = "neutral",
+  numeric = false,
   className,
 }: {
   children: React.ReactNode;
+  tone?: ChipTone;
+  /** Envuelve cifras: mono + tabular para que escaneen en columna. */
+  numeric?: boolean;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-[9px] py-[5px] text-[9px] leading-none font-bold whitespace-nowrap",
+        numeric && "tnum",
+        chipTone[tone],
+        className,
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** Chip de delta (DESIGN §6: padding 3px 7px, 800/10px + flecha). */
+export function Delta({
+  value,
+  direction,
+  tone = "neutral",
+  className,
+}: {
+  value: string;
+  direction: "up" | "down";
   tone?: ChipTone;
   className?: string;
 }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[10px] leading-none font-bold whitespace-nowrap",
+        "inline-flex items-center gap-1 rounded-full px-[7px] py-[3px] text-[10px] leading-none font-extrabold whitespace-nowrap",
         chipTone[tone],
         className,
       )}
     >
-      {children}
+      {direction === "up" ? "\u2197" : "\u2198"}
+      <span className="tnum">{value}</span>
     </span>
   );
 }
@@ -99,40 +129,70 @@ export function NakedStat({ value, label }: { value: string; label: string }) {
   );
 }
 
-/** Tipo 1 · KPI en card base neutra. */
+/** Tipo 1 · KPI en card base neutra (anatomía de DESIGN §6). */
 export function Kpi({
   label,
   value,
   hint,
-  chip,
+  icon: Icon,
+  family = "credito",
+  delta,
   tone = "default",
   ticks = false,
+  step,
 }: {
   label: string;
   value: string;
   hint?: string;
-  chip?: React.ReactNode;
+  icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  /** Tinte del chip de icono: identifica la familia del dato. */
+  family?: "credito" | "debito" | "suscrip";
+  delta?: React.ReactNode;
   tone?: Tone;
   ticks?: boolean;
+  /** Escalón tonal (tipo 5): 1 → 8%, 2 → 14%, 3 → 20%. */
+  step?: 1 | 2 | 3;
 }) {
+  const tint = `var(--d-${family})`;
   return (
-    <div className="m-base flex flex-col p-[14px]">
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-ink-mut font-mono text-[9px] font-bold tracking-[0.04em] uppercase">
+    <div
+      className={cn("m-base flex flex-col p-[14px]", step && `m-step-${step}`)}
+    >
+      <div className="flex items-center gap-2.5">
+        {Icon && (
+          <span
+            className="grid size-7 flex-none place-items-center rounded-[var(--r-el-sm)]"
+            style={{
+              background: `color-mix(in srgb, ${tint} 16%, transparent)`,
+              color: tint,
+            }}
+          >
+            <Icon className="size-[15px]" strokeWidth={2} />
+          </span>
+        )}
+        <span className="text-ink-mut text-[11px] font-bold tracking-[0.04em] uppercase">
           {label}
         </span>
-        {chip}
       </div>
       <span
         className={cn(
-          "tnum mt-2 text-[31px] leading-none font-extrabold tracking-[-0.03em]",
+          "tnum mt-2.5 text-[31px] leading-none font-extrabold tracking-[-0.03em]",
           toneText[tone],
         )}
       >
         {value}
       </span>
-      {ticks && <span className="ticks text-ink-3 mt-2 block" />}
-      {hint && <span className="text-ink-mut mt-1.5 text-[11px]">{hint}</span>}
+      {ticks && <span className="ticks text-line mt-2 block" />}
+      {(delta || hint) && (
+        <div className="mt-2 flex items-center gap-2">
+          {delta}
+          {hint && (
+            <span className="text-ink-mut text-[11px] leading-tight">
+              {hint}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -140,6 +140,36 @@ disparaba a 80 y las barras a 100): una tarjeta al 96% se pintaba de marca,
 que es exactamente lo que el motor prohíbe ("marca para negativo → eso es
 `danger`").
 
+## Política de cifra
+
+Una sola regla, para que el mismo dato no aparezca en dos formatos:
+
+| Rol | Formato | Ejemplo |
+|---|---|---|
+| Dato hero (dominante) | sin centavos | `$457,320` |
+| Dato KPI grande | sin centavos | `$139,204` |
+| Dato clave de card oscura | sin centavos | `$16,048` |
+| Fila de tabla / detalle / leyenda | **con** centavos | `$9,865.00` |
+| Footer de resumen | con centavos | `$139,204.00` |
+
+El hero resume, la fila rinde cuentas. Toda cifra —también dentro de chips,
+hints y frases— lleva `.tnum`; se envuelve **solo el número**, no la oración.
+
+## Serie temporal: qué barra lleva la marca
+
+El cian significa "vivo", así que en una serie por mes **lo lleva el mes en
+curso**, no el máximo histórico. El mes en curso además va rayado 45° por ser
+dato incompleto: se combinan, no se excluyen (`--brand` como color del rayado).
+Los meses cerrados van en `--ink-3`. El máximo se señala con chip de valor,
+nunca con color de marca — pintar de cian el peor mes cerrado contradice la
+tesis.
+
+## Orden de capas del canvas
+
+El lavado de marca va **encima** del grano. El grano ensucia el lienzo; el
+lavado es luz de ambiente y debe leerse por encima o la esquina se apaga en vez
+de encenderse.
+
 ## Rojo sobre superficie oscura
 
 `--danger` (#D92D20) sobre `--dark-a` da 3.5:1 — insuficiente a 12px. La
@@ -157,11 +187,35 @@ una persona no es un estado ni la identidad del producto.
 
 ```css
 --p-1: #C2703D;   /*  25° ámbar quemado */
---p-2: #7A5AA8;   /* 268° violeta       */
+--p-2: #A85A8E;   /* 318° magenta apagado */
 --p-3: #2E7D6B;   /* 168° verde azulado */
 ```
 
 Se asignan por orden de alta y no cambian.
+
+**Separación contra los matices de dato** (el motor pide ~40° mínimo y esta
+tabla faltaba):
+
+| Par | Distancia | Veredicto |
+|---|---|---|
+| `--p-1` 25° ↔ `--d-debito` 87° | 62° | ✅ |
+| `--p-2` 318° ↔ `--d-suscrip` 290° | 28° | ⚠️ nunca aparecen juntos |
+| `--p-2` 318° ↔ `--d-credito` 229° | 89° | ✅ |
+| `--p-3` 168° ↔ `--d-debito` 87° | 81° | ✅ |
+
+`--p-2` se movió de 268° a 318° porque a 268° quedaba a **39°** de
+`--d-credito` (229°) y ambos se pintan adyacentes en la misma fila de
+utilización: dos violetas apagados que el ojo lee como el mismo sistema.
+
+## Chip de sobregiro
+
+Al pasar de 100% la barra se clampea y 129% se vería igual que 96%. El estado
+se nombra, no se infiere:
+
+- Etiqueta: **`SOBREGIRO`** (mono, mayúsculas)
+- Anatomía: chip de estado de DESIGN §6 — `padding: 5px 9px`, 700/9px,
+  `--danger` sobre `--danger-050`
+- Va **además** del porcentaje, no en su lugar
 
 ## Tipo 4 · Card con tratamiento diferenciado
 
