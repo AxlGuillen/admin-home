@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { updateSession } from "@/shared/supabase/proxy";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/preview"];
+const PUBLIC_PATHS = ["/login", "/signup", "/auth"];
 
 // Optimistic redirect for UX, not a security barrier; RLS handles that.
 export async function proxy(request: NextRequest) {

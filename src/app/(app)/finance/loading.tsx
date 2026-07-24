@@ -3,14 +3,17 @@ import { CardListSkeleton } from "@/modules/finance";
 
 export default function Loading() {
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
+    <div>
+      <div className="mb-6 flex items-end gap-4">
         <div className="flex-1 space-y-2">
-          <Skeleton className="h-8 w-40" />
-          <Skeleton className="h-4 w-64" />
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-7 w-40" />
         </div>
-        <Skeleton className="h-9 w-32" />
-        <Skeleton className="h-9 w-36" />
+        <Skeleton className="h-9 w-32 rounded-[var(--r-el)]" />
+      </div>
+      <div className="mb-4 grid gap-4 lg:grid-cols-2">
+        <Skeleton className="h-[190px] rounded-[var(--r-card)]" />
+        <Skeleton className="h-[190px] rounded-[var(--r-card-sm)]" />
       </div>
       <CardListSkeleton />
     </div>

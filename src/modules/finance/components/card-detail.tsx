@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 
-import { Kpi, Panel } from "@/components/blueprint";
+import { Chip, Dark, Dominant, Gauge, Kpi, Panel } from "@/components/blueprint";
 import {
   ChartContainer,
   ChartTooltip,
@@ -17,6 +17,14 @@ import { CATEGORY_COLORS, categoryLabel, monthLabel } from "../categories";
 import { formatMoney } from "../money";
 
 const pesos = (cents: number) => formatMoney(cents);
+
+// Hero y KPI sin centavos; la fila de detalle sí los lleva (política del SKIN).
+const short = (cents: number) =>
+  new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "MXN",
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
 
 export function CardDetailDashboard({ data }: { data: CardDetail }) {
   const { card, totals } = data;
@@ -45,38 +53,91 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
   const monthMovements = data.movements.filter((m) => m.month === selected);
 
   return (
-    <div className="space-y-4.5">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {card.isCredit ? (
-          <>
-            <Kpi label="Deuda actual" value={pesos(totals.balanceCents ?? 0)} />
-            <Kpi
-              label="Utilización"
-              value={utilizationPct !== null ? `${utilizationPct}%` : "—"}
-              tone={
-                utilizationPct !== null && utilizationPct >= 80
-                  ? "danger"
-                  : "ok"
-              }
-            />
-            <Kpi
-              label="Costo del crédito"
-              value={pesos(totals.costCents)}
-              tone="danger"
-            />
-            <Kpi label="Gasto total" value={pesos(totals.spendCents)} />
-          </>
-        ) : (
-          <>
-            <Kpi label="Saldo actual" value={pesos(totals.balanceCents ?? 0)} />
-            <Kpi label="Ingresos" value={pesos(totals.inflowCents)} tone="ok" />
-            <Kpi label="Gastos / salidas" value={pesos(totals.spendCents)} />
-            <Kpi label="Meses" value={String(data.months.length)} />
-          </>
-        )}
+    <div className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
+        <Dominant
+          label={card.isCredit ? "Deuda de la tarjeta" : "Saldo de la cuenta"}
+          value={short(totals.balanceCents ?? 0)}
+          hint={`${data.months.length} estados de cuenta cargados`}
+          chip={
+            card.isCredit && utilizationPct !== null ? (
+              <Chip tone="onBrand">{utilizationPct}% del límite</Chip>
+            ) : undefined
+          }
+          footer={
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-white/70">
+                  {card.isCredit ? "Cargos del periodo" : "Salidas"}
+                </span>
+                <span className="tnum font-semibold text-white">
+                  {short(totals.spendCents)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-white/70">
+                  {card.isCredit ? "Pagos aplicados" : "Ingresos"}
+                </span>
+                <span className="tnum font-semibold text-white">
+                  {short(totals.inflowCents)}
+                </span>
+              </div>
+            </div>
+          }
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          {card.isCredit ? (
+            <>
+              <Gauge
+                pct={utilizationPct ?? 0}
+                label="Utilización"
+                hint="Deuda vs. límite"
+              />
+              <Kpi
+                label="Gasto total"
+                value={short(totals.spendCents)}
+                step={3}
+                ticks
+              />
+              <Kpi
+                label="Pagos aplicados"
+                value={short(totals.inflowCents)}
+                step={1}
+              />
+              <Dark
+                label="Costo del crédito"
+                keyValue={short(totals.costCents)}
+              >
+                <p className="text-dark-fg/70 text-[11px]">
+                  Intereses, comisiones e IVA.
+                </p>
+              </Dark>
+            </>
+          ) : (
+            <>
+              <Kpi
+                label="Ingresos"
+                value={short(totals.inflowCents)}
+                step={3}
+                ticks
+              />
+              <Kpi
+                label="Salidas"
+                value={short(totals.spendCents)}
+                step={2}
+              />
+              <Kpi label="Meses" value={String(data.months.length)} step={1} />
+              <Kpi
+                label="Movimientos"
+                value={String(data.movements.length)}
+              />
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="grid gap-4.5 lg:grid-cols-[1.2fr_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
         <Panel
           title={`${card.isCredit ? "Cargos vs. pagos" : "Ingresos vs. gastos"} por mes`}
         >
@@ -84,11 +145,11 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
             config={{
               spend: {
                 label: card.isCredit ? "Cargos" : "Gastos",
-                color: "var(--cat-4)",
+                color: "var(--d-credito)",
               },
               inflow: {
                 label: card.isCredit ? "Pagos" : "Ingresos",
-                color: "var(--cat-2)",
+                color: "var(--brand)",
               },
             }}
             className="max-h-[260px] w-full"
@@ -116,15 +177,15 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
                   />
                 }
               />
-              <Bar dataKey="spend" fill="var(--cat-4)" />
-              <Bar dataKey="inflow" fill="var(--cat-2)" />
+              <Bar dataKey="spend" fill="var(--d-credito)" />
+              <Bar dataKey="inflow" fill="var(--brand)" />
             </BarChart>
           </ChartContainer>
         </Panel>
 
         <Panel title="Gasto por categoría" subtitle="De esta tarjeta.">
           {categoryData.length === 0 ? (
-            <p className="text-muted-foreground py-10 text-center text-sm">
+            <p className="text-ink-mut py-10 text-center text-xs">
               Sin gasto categorizado.
             </p>
           ) : (
@@ -178,15 +239,15 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
             {data.subscriptions.map((s) => (
               <div
                 key={s.name}
-                className="flex items-center justify-between text-[13px]"
+                className="flex items-center justify-between text-xs font-semibold"
               >
                 <span>
                   {s.name}
-                  <span className="text-muted-foreground ml-2 text-xs">
+                  <span className="text-ink-mut ml-2 text-[11px] font-normal">
                     {s.months} meses
                   </span>
                 </span>
-                <span className="text-muted-foreground tabular-nums">
+                <span className="tnum text-ink-mut">
                   {pesos(s.perMonthCents)}/mes
                 </span>
               </div>
@@ -196,8 +257,8 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
       )}
 
       <Panel>
-        <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2.5">
-          <h4 className="text-base">Movimientos</h4>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2.5">
+          <h4 className="text-[13px] font-extrabold">Movimientos</h4>
           <div className="flex flex-wrap">
             {monthKeys.map((m) => (
               <button
@@ -205,10 +266,10 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
                 type="button"
                 onClick={() => setSelected(m)}
                 className={cn(
-                  "border-divider -ml-px border px-3 py-1.5 font-[family-name:var(--font-barlow-condensed)] text-[13px]",
+                  "border-line -ml-px border px-3 py-1.5 text-[11px] font-bold first:rounded-l-[var(--r-el-sm)] last:rounded-r-[var(--r-el-sm)]",
                   m === selected
-                    ? "bg-primary text-primary-foreground border-primary relative z-10"
-                    : "hover:bg-[color-mix(in_srgb,var(--ink)_6%,transparent)]",
+                    ? "bg-brand border-brand relative z-10 text-white"
+                    : "text-ink-2 hover:bg-line-2",
                 )}
               >
                 {monthLabel(m)}
@@ -218,28 +279,28 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
         </div>
         <div>
           {monthMovements.length === 0 ? (
-            <p className="text-muted-foreground py-6 text-center text-sm">
+            <p className="text-ink-mut py-6 text-center text-xs">
               Sin movimientos este mes.
             </p>
           ) : (
             monthMovements.map((m, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3.5 border-b border-[color-mix(in_srgb,var(--ink)_8%,transparent)] py-2.5 text-[13px]"
+                className="flex items-center gap-3.5 border-line/60 border-b text-xs font-semibold"
               >
-                <span className="text-muted-foreground w-11 shrink-0 text-xs">
+                <span className="text-ink-mut tnum w-11 shrink-0 text-[11px] font-normal">
                   {m.date?.slice(5) ?? ""}
                 </span>
                 <span className="flex-1 truncate">{m.description}</span>
                 {m.category && (
-                  <span className="text-muted-foreground shrink-0 border border-[color-mix(in_srgb,var(--ink)_18%,transparent)] px-2 py-0.5 text-[10px]">
+                  <span className="text-ink-mut border-line shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold">
                     {categoryLabel(m.category)}
                   </span>
                 )}
                 <span
                   className={cn(
-                    "w-[110px] shrink-0 text-right tabular-nums",
-                    m.flow === "in" && "text-[var(--c-pos)]",
+                    "tnum w-[110px] shrink-0 text-right",
+                    m.flow === "in" && "text-ok",
                   )}
                 >
                   {m.flow === "in" ? "+" : "−"}

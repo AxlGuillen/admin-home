@@ -35,10 +35,10 @@ export function PersonItem({ person }: { person: Person }) {
   }
 
   return (
-    <div className="blueprint bg-card elev-sm relative flex items-center gap-3.5 px-5 py-4">
+    <div className="m-base flex items-center gap-3.5 p-[14px]">
       <span
         aria-hidden
-        className="border-divider grid size-9 flex-none place-items-center border font-[family-name:var(--font-barlow-condensed)] text-[15px]"
+        className="border-line grid size-9 flex-none place-items-center rounded-[var(--r-el-sm)] border font-mono text-[13px] font-bold"
         style={{ color: person.color ?? "var(--foreground)" }}
       >
         {person.name.charAt(0).toUpperCase()}
@@ -49,7 +49,7 @@ export function PersonItem({ person }: { person: Person }) {
       </div>
 
       {person.userId && (
-        <span className="tag-neutral text-muted-foreground bg-[color-mix(in_srgb,var(--ink)_8%,transparent)] px-2.5 py-1 text-[11px]">
+        <span className="bg-line-2 text-ink-2 rounded-full px-[9px] py-[5px] text-[9px] font-bold">
           Tiene cuenta
         </span>
       )}
@@ -62,7 +62,7 @@ export function PersonItem({ person }: { person: Person }) {
             size="icon"
             disabled={pending}
             aria-label={`Editar ${person.name}`}
-            className="size-9 rounded-none"
+            className="size-8 rounded-[var(--r-el-sm)]"
           >
             <Pencil />
           </Button>
@@ -75,7 +75,7 @@ export function PersonItem({ person }: { person: Person }) {
         disabled={pending}
         onClick={() => setConfirmDelete(true)}
         aria-label={`Eliminar ${person.name}`}
-        className="size-9 rounded-none"
+        className="size-8 rounded-[var(--r-el-sm)]"
       >
         <Trash2Icon className="size-4" />
       </Button>

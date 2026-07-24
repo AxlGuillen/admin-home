@@ -18,33 +18,41 @@ export default async function AppLayout({
 
   return (
     <div className="flex h-svh overflow-hidden">
-      <aside className="bg-sidebar border-divider elev-md relative z-10 flex w-[250px] flex-none flex-col border-r">
-        <div className="border-divider flex items-center gap-2.5 border-b px-5 py-5">
-          <span className="border-primary block size-[11px] flex-none border-2" />
-          <span className="font-[family-name:var(--font-barlow-condensed)] text-lg tracking-[0.02em]">
+      <aside className="bg-sidebar border-line flex w-[var(--sidebar-w)] flex-none flex-col border-r">
+        <div className="border-line flex items-center gap-2.5 border-b px-5 py-5">
+          <span className="bg-brand grid size-6 place-items-center rounded-[var(--r-el-sm)]">
+            <span className="block size-2 rounded-full bg-white" />
+          </span>
+          <span className="text-[17px] font-extrabold tracking-[-0.01em]">
             Admin Home
           </span>
         </div>
 
         <SidebarNav />
 
-        <div className="border-divider flex flex-col gap-3 border-t p-3.5">
+        <div className="space-y-2 p-3">
           <ThemeToggle />
-          <div className="flex items-center gap-2.5">
-            <span className="border-divider text-primary grid size-[30px] flex-none place-items-center border font-[family-name:var(--font-barlow-condensed)] text-[13px]">
+          {/* Pie de sidebar: card oscura con el bisel de dial detrás del avatar. */}
+          <div className="m-dark m-bezel flex items-center gap-2.5 p-3">
+            <span className="relative grid size-8 flex-none place-items-center rounded-full bg-white/10 font-mono text-[12px] font-bold text-white">
               {initial}
             </span>
-            <span className="text-muted-foreground flex-1 truncate text-xs">
-              {user.email}
-            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-dark-fg nm text-[12px] font-semibold">
+                {user.email}
+              </p>
+              <span className="text-dark-fg/55 font-mono text-[9px] tracking-[0.04em] uppercase">
+                Sesión activa
+              </span>
+            </div>
             <form action={signOut}>
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="icon"
                 type="submit"
                 aria-label="Salir"
                 title="Salir"
-                className="size-9 flex-none rounded-none"
+                className="text-dark-fg/70 size-8 flex-none rounded-[var(--r-el-sm)] hover:bg-white/10 hover:text-white"
               >
                 <LogOut className="size-4" />
               </Button>
@@ -53,8 +61,8 @@ export default async function AppLayout({
         </div>
       </aside>
 
-      <main className="grid-bg h-svh min-w-0 flex-1 overflow-auto">
-        <div className="mx-auto max-w-[980px] px-11 pt-10 pb-18">{children}</div>
+      <main className="h-svh min-w-0 flex-1 overflow-auto">
+        <div className="mx-auto max-w-[1080px] px-8 pt-8 pb-16">{children}</div>
       </main>
     </div>
   );

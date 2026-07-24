@@ -2,18 +2,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6">
-      <Skeleton className="h-9 w-56" />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-20 w-full" />
-        ))}
+    <div>
+      <Skeleton className="mb-3.5 h-4 w-20" />
+      <Skeleton className="mb-6 h-8 w-56" />
+      <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_1.4fr]">
+        <Skeleton className="h-[228px] rounded-[var(--r-card)]" />
+        <div className="grid grid-cols-2 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-[106px] rounded-[var(--r-card)]" />
+          ))}
+        </div>
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Skeleton className="h-72 w-full" />
-        <Skeleton className="h-72 w-full" />
+      <div className="mb-4 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
+        <Skeleton className="h-[260px] rounded-[var(--r-card)]" />
+        <Skeleton className="h-[260px] rounded-[var(--r-card)]" />
       </div>
-      <Skeleton className="h-64 w-full" />
+      <Skeleton className="h-[220px] rounded-[var(--r-card)]" />
     </div>
   );
 }

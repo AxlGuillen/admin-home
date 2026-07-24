@@ -95,6 +95,7 @@
   /* Texturas firma (assets generados; blanco sobre negro + blend-mode) */
   --tex-brand: url("/textures/topo.avif");
   --tex-grain: url("/textures/grain.avif");
+  --tex-dial: url("/textures/dial.avif");
   /* Pendiente el guilloché de la card oscura; hasta entonces solo el hatch. */
   --tex-dark: none;
 
@@ -370,6 +371,25 @@
   mix-blend-mode: soft-light;
   opacity: 0.28;
 }
+/* Bisel del pie de sidebar: el dial de ticks detrás del avatar. */
+.m-bezel {
+  position: relative;
+  overflow: hidden;
+}
+.m-bezel::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 22px;
+  width: 74px;
+  height: 74px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  background: var(--tex-dial) center / contain no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.5;
+}
+
 /* Tipo 5 · escalones tonales: secuencia 8% -> 14% -> 20% entre la card base y
    la dominante. Van en fila y en orden, nunca salpicados. */
 .m-step-1 {

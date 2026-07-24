@@ -1,11 +1,30 @@
 import Link from "next/link";
 import { BarChart3, Plus } from "lucide-react";
 
-import { PageHeading } from "@/components/blueprint";
+import { Chip, Dark, Dominant, PageHeading } from "@/components/blueprint";
 import { Button } from "@/components/ui/button";
-import { CardFormDialog, CardItem } from "@/modules/finance";
-import { listCards } from "@/modules/finance/server";
+import {
+  CardFormDialog,
+  CardItem,
+  daysUntil,
+  formatCivilDate,
+  isCreditCard,
+  nextPaymentDate,
+  todayIn,
+} from "@/modules/finance";
+import { getFinanceOverview, listCards } from "@/modules/finance/server";
 import { listPeople } from "@/modules/people/server";
+import {
+  HOUSEHOLD_LOCALE,
+  HOUSEHOLD_TIME_ZONE,
+} from "@/shared/config/household";
+
+const short = (cents: number) =>
+  new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "MXN",
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
 
 export const metadata = { title: "Finanzas · Admin Home" };
 
@@ -19,9 +38,10 @@ export default async function FinancePage({
   const { archived, owner } = await searchParams;
   const showArchived = archived === "1";
 
-  const [cards, people] = await Promise.all([
+  const [cards, people, overview] = await Promise.all([
     listCards({ includeArchived: showArchived, ownerPersonId: owner }),
     listPeople(),
+    getFinanceOverview(),
   ]);
 
   // includeArchived returns active + archived; the archived view wants only archived.
@@ -30,6 +50,24 @@ export default async function FinancePage({
     : cards;
 
   const peopleById = new Map(people.map((p) => [p.id, p]));
+
+  // Próximo pago del hogar: la tarjeta de crédito activa que vence primero.
+  const ref = todayIn(HOUSEHOLD_TIME_ZONE);
+  const upcoming = cards
+    .filter(isCreditCard)
+    .filter((c) => c.archivedAt === null)
+    .map((c) => {
+      const due = nextPaymentDate(c.cutDay, c.paymentDay, ref);
+      return { card: c, due, days: daysUntil(due, ref) };
+    })
+    .sort((a, b) => a.days - b.days)[0];
+
+  const utilizationPct =
+    overview.totals.limitCents > 0
+      ? Math.round(
+          (overview.totals.currentDebtCents / overview.totals.limitCents) * 100,
+        )
+      : null;
 
   function filterHref(nextOwner?: string) {
     const params = new URLSearchParams();
@@ -76,6 +114,51 @@ export default async function FinancePage({
           </>
         }
       />
+
+      {!showArchived && (
+        <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_1fr]">
+          <Dominant
+            label="Deuda total en crédito"
+            value={short(overview.totals.currentDebtCents)}
+            hint={`${overview.utilization.length} tarjetas con estado de cuenta`}
+            chip={
+              utilizationPct !== null ? (
+                <Chip tone="onBrand">{utilizationPct}% del límite</Chip>
+              ) : undefined
+            }
+            footer={
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-white/70">Límite del hogar</span>
+                <span className="tnum font-semibold text-white">
+                  {short(overview.totals.limitCents)}
+                </span>
+              </div>
+            }
+          />
+          {upcoming ? (
+            <Dark
+              label="Próximo pago"
+              keyValue={formatCivilDate(upcoming.due, HOUSEHOLD_LOCALE)}
+              keyTone="brand"
+            >
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-dark-fg/70">Tarjeta</span>
+                  <span className="text-dark-fg font-semibold">
+                    {upcoming.card.name}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-dark-fg/70">Faltan</span>
+                  <span className="tnum text-dark-fg font-semibold">
+                    {upcoming.days} días
+                  </span>
+                </div>
+              </div>
+            </Dark>
+          ) : null}
+        </div>
+      )}
 
       {people.length > 0 && (
         <div className="mb-5.5 flex flex-wrap items-center gap-2">

@@ -24,22 +24,17 @@ export function LoginForm({ next }: { next: string }) {
   return (
     <form
       action={formAction}
-      className="blueprint elev-lg bg-surface relative z-10 w-[min(408px,92vw)] px-10 pt-11 pb-9"
+      className="m-base relative z-10 w-[min(408px,92vw)] px-9 pt-10 pb-8 shadow-[var(--sh-raise)]"
     >
-      <i className="corner tl" />
-      <i className="corner tr" />
-      <i className="corner bl" />
-      <i className="corner br" />
-
       <input type="hidden" name="next" value={next} />
 
-      <div className="text-primary mb-3.5 font-[family-name:var(--font-barlow-condensed)] text-[11px] tracking-[0.28em]">
+      <div className="text-brand-700 mb-3 font-mono text-[11px] font-bold tracking-[0.06em] uppercase">
         ACCESO
       </div>
-      <h1 className="mb-1.5 text-[38px] leading-none tracking-[-0.02em]">
+      <h1 className="mb-1.5 text-[25px] leading-none tracking-[-0.025em]">
         Admin Home
       </h1>
-      <p className="text-muted-foreground mb-6 text-sm">
+      <p className="text-ink-mut mb-6 text-[12.5px]">
         Administración y registro de los ámbitos de la casa.
       </p>
 
@@ -74,7 +69,7 @@ export function LoginForm({ next }: { next: string }) {
               showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
             }
             aria-pressed={showPassword}
-            className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center px-3"
+            className="text-ink-mut hover:text-ink absolute inset-y-0 right-0 flex items-center px-3"
           >
             {showPassword ? (
               <EyeOff className="size-4" />
@@ -86,7 +81,7 @@ export function LoginForm({ next }: { next: string }) {
       </div>
 
       {state && !state.ok && (
-        <p role="alert" className="text-destructive mb-4 text-sm">
+        <p role="alert" className="text-danger mb-4 text-xs font-semibold">
           {state.error}
         </p>
       )}
@@ -94,12 +89,12 @@ export function LoginForm({ next }: { next: string }) {
       <Button
         type="submit"
         disabled={pending}
-        className="h-11 w-full rounded-none text-[15px]"
+        className="h-11 w-full rounded-[var(--r-el)] text-[13px] font-bold"
       >
         {pending ? "Entrando…" : "Entrar"}
       </Button>
 
-      <div className="text-muted-foreground mt-5 flex justify-between font-[family-name:var(--font-barlow-condensed)] text-[11px] tracking-[0.05em]">
+      <div className="text-ink-mut mt-5 flex justify-between font-mono text-[9px] font-bold tracking-[0.04em] uppercase">
         <span>v0.1</span>
         <span>MÓDULO · HOGAR</span>
       </div>

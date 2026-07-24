@@ -269,10 +269,24 @@ de tabla ni en tiles secundarios — perdería su significado.
 
 ### Asignación de material por pantalla
 
+Toda pantalla lleva dominante. Una lista sin ancla nace sin identidad: las
+cards blancas repetidas son exactamente lo que el motor prohíbe.
+
 | Pantalla | Dominante (tipo 2) | Oscura (tipo 3) |
 |---|---|---|
-| Inicio | Deuda total del hogar | Fugas del mes |
-| Finanzas | — (lista) | Próximo pago vencido |
+| Inicio | Balance del hogar (débito − deuda) | Fugas del mes |
+| Finanzas | Deuda total en crédito | Próximo pago |
 | Detalle | Deuda / saldo de la tarjeta | Costo del crédito |
 | Análisis | Gasto total del periodo | Fugas de capital |
-| Personas | — (lista) | — |
+| Personas | Personas del hogar | — |
+
+Ninguna dominante repite la cifra de otra pantalla: Inicio da la posición neta,
+Finanzas la deuda, Análisis el gasto. Si dos pantallas mostraran el mismo hero,
+una de las dos sobra.
+
+### Bisel del pie de sidebar
+
+La card oscura del pie lleva el **dial de ticks** (`/textures/dial.avif`) como
+bisel detrás del avatar: cierra el sidebar con el mismo lenguaje de instrumento
+que abre la dominante. Va en `screen` a opacidad baja — es un bisel, no un
+gráfico.

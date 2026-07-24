@@ -2,8 +2,6 @@
 
 import { Moon, Sun } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-
 function toggle() {
   const next = !document.documentElement.classList.contains("dark");
   document.documentElement.classList.toggle("dark", next);
@@ -12,16 +10,15 @@ function toggle() {
 
 export function ThemeToggle() {
   return (
-    <Button
-      variant="secondary"
-      size="sm"
+    <button
+      type="button"
       onClick={toggle}
-      className="w-full justify-start gap-2.5 rounded-none"
+      className="border-line bg-surface text-ink-2 hover:bg-line-2 flex w-full items-center gap-2.5 rounded-[var(--r-el)] border px-3 py-2 text-[12px] font-semibold transition-colors duration-[var(--dur-micro)]"
     >
-      <Moon className="size-4 dark:hidden" />
-      <Sun className="hidden size-4 dark:block" />
+      <Moon className="size-4 dark:hidden" strokeWidth={2} />
+      <Sun className="hidden size-4 dark:block" strokeWidth={2} />
       <span className="dark:hidden">Tema oscuro</span>
       <span className="hidden dark:block">Tema claro</span>
-    </Button>
+    </button>
   );
 }

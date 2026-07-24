@@ -50,11 +50,11 @@ export function CardItem({
 
   return (
     <div
-      className={`blueprint bg-card elev-sm relative flex items-start gap-4 px-5 py-4.5 transition-shadow hover:shadow-[var(--shadow-md)] ${isArchived ? "opacity-60" : ""}`}
+      className={`m-base flex items-start gap-4 p-[18px] transition-shadow duration-[var(--dur)] hover:shadow-[var(--sh-raise)] ${isArchived ? "opacity-60" : ""}`}
     >
       <span
         aria-hidden
-        className="border-divider mt-0.5 grid size-[38px] flex-none place-items-center border"
+        className="border-line mt-0.5 grid size-9 flex-none place-items-center rounded-[var(--r-el-sm)] border"
         style={{
           color,
           background: `color-mix(in srgb, ${color} 12%, transparent)`,
@@ -67,7 +67,7 @@ export function CardItem({
         <div className="flex flex-wrap items-center gap-2.5">
           <Link
             href={`/finance/${card.id}`}
-            className="font-[family-name:var(--font-barlow-condensed)] text-lg leading-none hover:underline"
+            className="text-[13px] leading-none font-extrabold hover:underline"
           >
             {card.name}
           </Link>
@@ -76,12 +76,12 @@ export function CardItem({
           {owner ? (
             <PersonBadge person={owner} />
           ) : (
-            <span className="text-muted-foreground text-xs">Sin dueño</span>
+            <span className="text-ink-mut text-[11px]">Sin dueño</span>
           )}
         </div>
 
         {(card.issuer || card.lastFour) && (
-          <p className="text-muted-foreground text-[13px]">
+          <p className="text-ink-mut text-[11px]">
             {card.issuer}
             {card.issuer && card.lastFour && " · "}
             {card.lastFour && `•••• ${card.lastFour}`}
@@ -89,13 +89,13 @@ export function CardItem({
         )}
 
         {card.description && (
-          <p className="text-muted-foreground text-[13px]">
+          <p className="text-ink-mut text-[11px]">
             {card.description}
           </p>
         )}
 
         {isCreditCard(card) && (
-          <p className="text-muted-foreground text-[13px]">
+          <p className="text-ink-mut text-[11px]">
             Corte día {card.cutDay} · Pago día {card.paymentDay}
             {card.creditLimitCents !== null &&
               ` · Límite ${formatMoney(card.creditLimitCents)}`}
@@ -103,7 +103,7 @@ export function CardItem({
         )}
 
         {payment && (
-          <p className="text-primary text-[13px] font-medium">{payment}</p>
+          <p className="text-brand-700 text-[11px] font-bold">{payment}</p>
         )}
       </div>
 
