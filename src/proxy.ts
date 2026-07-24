@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { updateSession } from "@/shared/supabase/proxy";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/auth"];
+const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/preview"];
 
 // Optimistic redirect for UX, not a security barrier; RLS handles that.
 export async function proxy(request: NextRequest) {
@@ -33,6 +33,6 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Skip static assets and images: they need no session and would pay the refresh cost on every request.
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif)$).*)",
   ],
 };

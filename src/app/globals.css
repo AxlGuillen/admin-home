@@ -2,138 +2,258 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* ══════════════════════════════════════════════════════════════════
+   Admin Home — "tablero de instrumentos de precisión"
+   Hereda de DESIGN.md v1.0 · tokens de SKIN-admin-home.md
+   ══════════════════════════════════════════════════════════════════ */
 
 @theme inline {
+  /* fonts */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-display: var(--font-sans);
+
+  /* shadcn bridge */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-barlow), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-barlow-condensed), var(--font-barlow), sans-serif;
-  --color-cat-1: var(--cat-1);
-  --color-cat-2: var(--cat-2);
-  --color-cat-3: var(--cat-3);
-  --color-cat-4: var(--cat-4);
-  --color-cat-5: var(--cat-5);
-  --color-cat-6: var(--cat-6);
-  --color-pos: var(--c-pos);
-  --color-neg: var(--c-neg);
-  --color-surface: var(--surface);
-  --color-divider: var(--divider);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* instrument tokens (Tailwind utilities: bg-brand, text-ink, border-line…) */
+  --color-brand: var(--brand);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-900: var(--brand-900);
+  --color-brand-050: var(--brand-050);
+  --color-brand-100: var(--brand-100);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-mut: var(--ink-mut);
+  --color-ink-mut-2: var(--ink-mut-2);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-surface: var(--surface);
+  --color-ok: var(--ok);
+  --color-danger: var(--danger);
+  --color-warn: var(--warn);
+  --color-d-credito: var(--d-credito);
+  --color-d-debito: var(--d-debito);
+  --color-d-suscrip: var(--d-suscrip);
+  --color-dark-fg: var(--dark-fg);
+  --color-danger-on-dark: var(--danger-on-dark);
+  --color-p-1: var(--p-1);
+  --color-p-2: var(--p-2);
+  --color-p-3: var(--p-3);
+
+  /* radii (DESIGN portable) */
+  --radius-shell: var(--r-shell);
+  --radius-card: var(--r-card);
+  --radius-card-sm: var(--r-card-sm);
+  --radius-el: var(--r-el);
+  --radius-el-sm: var(--r-el-sm);
 }
 
 :root {
-  /* Industry / blueprint palette — light */
-  --bg: #f2f2f3;
-  --surface: #e9e9ea;
-  --ink: #1d1f20;
-  --divider: color-mix(in srgb, #1d1f20 16%, transparent);
-  --accent-solid: #2f6fe0;
-  --accent-600: #255fca;
-  --accent-700: #1f4fa8;
-  --cat-1: #2f6fe0;
-  --cat-2: #12b886;
-  --cat-3: #f5a623;
-  --cat-4: #f0512e;
-  --cat-5: #7c4dff;
-  --cat-6: #e93d82;
-  --c-pos: #10b981;
-  --c-neg: #ef4444;
-  --shadow-sm: 0 1px 2px color-mix(in srgb, #2b2b2d 14%, transparent);
-  --shadow-md: 0 3px 10px color-mix(in srgb, #2b2b2d 16%, transparent);
-  --shadow-lg: 0 12px 32px color-mix(in srgb, #2b2b2d 22%, transparent);
+  /* ── SKIN · marca (cian de instrumento, hue ≈ 196°) ── */
+  --skin-brand: #0a9fd4;
+  --skin-brand-600: #0888b6;
+  --skin-brand-700: #076f96;
+  --skin-brand-900: #06364a;
+  --skin-brand-100: #bce6f7;
+  --skin-brand-050: #e8f6fc;
+  --skin-grad-brand: linear-gradient(150deg, #12b0e4 0%, #0a9fd4 46%, #076f96 100%);
+  --skin-glow: rgb(10 159 212 / 0.12);
 
-  /* shadcn tokens remapped onto the palette so existing components inherit it */
-  --background: var(--bg);
+  /* Texturas firma (assets generados; blanco sobre negro + blend-mode) */
+  --tex-brand: url("/textures/topo.avif");
+  --tex-grain: url("/textures/grain.avif");
+  /* Pendiente el guilloché de la card oscura; hasta entonces solo el hatch. */
+  --tex-dark: none;
+
+  /* ── SKIN · estado ── */
+  --skin-danger: #d92d20;
+  --skin-danger-050: #fdecea;
+
+  /* ── SKIN · neutros grafito, sesgo frío ── */
+  --skin-ink: #0e1a22;
+  --skin-ink-2: #24363f;
+  --skin-ink-3: #3d525c;
+  --skin-muted: #6b818c;
+  --skin-muted-2: #93a6af;
+  --skin-line: #e1e9ed;
+  --skin-line-2: #f0f5f7;
+  --skin-sidebar: #f4f8fa;
+  --skin-sidebar-border: #e1e9ed;
+  --skin-canvas-a: #f8fbfc;
+  --skin-canvas-b: #edf3f6;
+  --skin-dark-a: #16242e;
+  --skin-dark-b: #0d1720;
+  --skin-dark-fg: #c9dae3;
+
+  /* ── SKIN · tipografía ── */
+  --font-sans: var(--font-archivo), sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* ── DESIGN · derivados ── */
+  --brand: var(--skin-brand);
+  --brand-600: var(--skin-brand-600);
+  --brand-700: var(--skin-brand-700);
+  --brand-900: var(--skin-brand-900);
+  --brand-050: var(--skin-brand-050);
+  --brand-100: var(--skin-brand-100);
+  --brand-fg: #ffffff;
+  --ok: #128a4a;
+  --ok-050: #e2f5ea;
+  --danger: var(--skin-danger);
+  --danger-050: var(--skin-danger-050);
+  --warn: #b5771b;
+  --warn-050: #fbf0da;
+  --ink: var(--skin-ink);
+  --ink-2: var(--skin-ink-2);
+  --ink-3: var(--skin-ink-3);
+  --ink-mut: var(--skin-muted);
+  --ink-mut-2: var(--skin-muted-2);
+  --line: var(--skin-line);
+  --line-2: var(--skin-line-2);
+  --surface: #ffffff;
+  --canvas-a: var(--skin-canvas-a);
+  --canvas-b: var(--skin-canvas-b);
+  --dark-a: var(--skin-dark-a);
+  --dark-b: var(--skin-dark-b);
+  --dark-fg: var(--skin-dark-fg);
+
+  /* ── SKIN · matices de dato (familias de tarjeta) ── */
+  --d-credito: #6e7fc9;
+  --d-debito: #7e9660;
+  --d-suscrip: #9a7aa0;
+
+  /* ── SKIN · personas (nunca marca ni estado) ── */
+  --p-1: #c2703d;
+  --p-2: #7a5aa8;
+  --p-3: #2e7d6b;
+
+  /* ── SKIN · danger legible sobre superficie oscura (4.9:1) ── */
+  --danger-on-dark: #ff6b5e;
+
+  /* ── SKIN · escalones tonales (tipo 5), 8% → 20% ── */
+  --step-1: color-mix(in srgb, var(--brand) 8%, #fff);
+  --step-2: color-mix(in srgb, var(--brand) 14%, #fff);
+  --step-3: color-mix(in srgb, var(--brand) 20%, #fff);
+
+  /* ── SKIN · escala categórica de gasto ──
+     Rampa de acero fría de un solo eje, ordenada por monto (mayor = más oscuro).
+     Baja croma, sin arcoíris, sin tocar marca ni estado. Lee como instrumento. */
+  --cat-1: #2b4048;
+  --cat-2: #3c5a67;
+  --cat-3: #517483;
+  --cat-4: #6b8f9c;
+  --cat-5: #8fa9b3;
+  --cat-6: #b4c6cd;
+
+  /* ── DESIGN · radios anidados (portable) ── */
+  --r-shell: 24px;
+  --r-card: 18px;
+  --r-card-sm: 16px;
+  --r-el: 12px;
+  --r-el-sm: 9px;
+  --r-pill: 999px;
+
+  /* ── DESIGN · elevación (portable) ── */
+  --sh-base: 0 1px 2px rgb(30 45 80 / 0.05), 0 8px 20px rgb(30 45 80 / 0.06);
+  --sh-raise: 0 1px 2px rgb(30 45 80 / 0.08), 0 12px 30px rgb(30 45 80 / 0.12),
+    0 30px 60px rgb(30 45 80 / 0.08), inset 0 1px 0 #fff;
+  --sh-brand: 0 2px 4px rgb(6 54 74 / 0.35), 0 16px 36px rgb(6 54 74 / 0.4),
+    0 36px 70px rgb(6 54 74 / 0.26), inset 0 1px 0 #ffffff33;
+  --sh-dark: 0 2px 4px rgb(16 21 31 / 0.3), 0 12px 28px rgb(16 21 31 / 0.34),
+    inset 0 1px 0 #ffffff14;
+
+  /* ── DESIGN · superficies compuestas ── */
+  --grad-brand: var(--skin-grad-brand);
+  --grad-dark: linear-gradient(150deg, var(--dark-a), var(--dark-b));
+  --canvas-wash: linear-gradient(135deg, var(--canvas-a) 0%, var(--canvas-b) 52%),
+    radial-gradient(85% 80% at 100% -5%, var(--skin-glow), transparent 58%);
+  --hatch: repeating-linear-gradient(
+    45deg,
+    var(--line-2) 0 3px,
+    var(--line) 3px 6px
+  );
+  --hatch-dark: repeating-linear-gradient(
+    45deg,
+    #ffffff08 0 1px,
+    transparent 1px 8px
+  );
+
+  /* ── DESIGN · layout / densidad / movimiento ── */
+  --sidebar-w: 260px;
+  --row-h: 46px;
+  --row-h-sm: 37px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-micro: 120ms;
+  --dur: 180ms;
+  --dur-panel: 240ms;
+
+  /* ── shadcn bridge (nombres que consumen los componentes base) ── */
+  --background: var(--canvas-a);
   --foreground: var(--ink);
   --card: var(--surface);
   --card-foreground: var(--ink);
   --popover: var(--surface);
   --popover-foreground: var(--ink);
-  --primary: var(--accent-solid);
-  --primary-foreground: var(--bg);
-  --secondary: transparent;
-  --secondary-foreground: var(--ink);
-  --muted: var(--surface);
-  --muted-foreground: color-mix(in srgb, var(--ink) 55%, transparent);
-  --accent: color-mix(in srgb, var(--accent-solid) 14%, transparent);
-  --accent-foreground: var(--accent-solid);
-  --destructive: var(--c-neg);
-  --border: var(--divider);
-  --input: var(--divider);
-  --ring: var(--accent-solid);
-  --chart-1: var(--cat-1);
-  --chart-2: var(--cat-2);
-  --chart-3: var(--cat-3);
-  --chart-4: var(--cat-4);
-  --chart-5: var(--cat-5);
-  --radius: 0.25rem;
-  --sidebar: var(--surface);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-fg);
+  --secondary: var(--line-2);
+  --secondary-foreground: var(--ink-2);
+  --muted: var(--line-2);
+  --muted-foreground: var(--ink-mut);
+  --accent: var(--brand-050);
+  --accent-foreground: var(--brand-700);
+  --destructive: var(--danger);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--brand);
+  --chart-1: var(--brand);
+  --chart-2: var(--d-credito);
+  --chart-3: var(--d-debito);
+  --chart-4: var(--d-suscrip);
+  --chart-5: var(--ink-3);
+  --radius: 12px;
+  --sidebar: var(--skin-sidebar);
   --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--accent-solid);
-  --sidebar-primary-foreground: var(--bg);
-  --sidebar-accent: color-mix(in srgb, var(--accent-solid) 14%, transparent);
-  --sidebar-accent-foreground: var(--accent-solid);
-  --sidebar-border: var(--divider);
-  --sidebar-ring: var(--accent-solid);
-}
-
-.dark {
-  /* Industry / blueprint palette — dark. Remapped tokens above cascade. */
-  --bg: #161819;
-  --surface: #1f2224;
-  --ink: #e8eaec;
-  --divider: color-mix(in srgb, #e8eaec 15%, transparent);
-  --accent-solid: #5aa0ff;
-  --accent-600: #4d90f0;
-  --accent-700: #3f7fd8;
-  --cat-1: #5aa0ff;
-  --cat-2: #2fdca0;
-  --cat-3: #ffc247;
-  --cat-4: #ff6a45;
-  --cat-5: #a98bff;
-  --cat-6: #ff67a3;
-  --c-pos: #2fdca0;
-  --c-neg: #ff5a5a;
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5);
-  --shadow-md: 0 4px 14px rgb(0 0 0 / 0.55);
-  --shadow-lg: 0 18px 44px rgb(0 0 0 / 0.6);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--brand-fg);
+  --sidebar-accent: var(--brand-050);
+  --sidebar-accent-foreground: var(--brand-700);
+  --sidebar-border: var(--skin-sidebar-border);
+  --sidebar-ring: var(--brand);
 }
 
 @layer base {
@@ -141,116 +261,157 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    position: relative;
+    background: var(--canvas-wash);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
   }
-  html {
-    @apply font-sans;
+  /* Grano del canvas. El asset es blanco sobre negro: se invierte a mota
+     oscura sobre blanco para que multiply solo ensucie el lienzo, no lo apague. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: var(--tex-grain) center / 320px;
+    filter: invert(1);
+    mix-blend-mode: multiply;
+    opacity: 0.35;
+  }
+  body > * {
+    position: relative;
+    z-index: 1;
   }
   h1,
   h2,
   h3,
-  h4 {
-    font-family: var(--font-barlow-condensed), var(--font-barlow), sans-serif;
-    letter-spacing: -0.015em;
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-sans);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
   }
 }
 
-/* ── Industry / blueprint utilities ─────────────────────────────────── */
-.blueprint {
+/* ── Numerales tabulares (regla no negociable de DESIGN §1) ── */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+.nm {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* ── Motor de material · 5 superficies (DESIGN §3) ── */
+.m-base {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--sh-base);
+}
+.m-brand {
   position: relative;
-  border: 1px solid var(--divider);
-  border-radius: 0;
+  overflow: hidden;
+  background: var(--grad-brand);
+  border-radius: var(--r-card);
+  box-shadow: var(--sh-brand);
+  color: var(--brand-fg);
 }
-.corner {
-  position: absolute;
-  width: 11px;
-  height: 11px;
-  color: color-mix(in srgb, var(--ink) 55%, transparent);
-  pointer-events: none;
-}
-.corner::before,
-.corner::after {
+.m-brand::before {
   content: "";
   position: absolute;
-  background: currentColor;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    58% 68% at 100% 0%,
+    rgb(255 255 255 / 0.28),
+    transparent 60%
+  );
 }
-.corner::before {
-  left: 5px;
-  top: 0;
-  width: 1px;
-  height: 100%;
+/* Textura firma (asset IA, topográfica). Invisible hasta definir --tex-brand. */
+.m-brand::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--tex-brand) center / 520px;
+  mix-blend-mode: soft-light;
+  opacity: 0.4;
 }
-.corner::after {
-  top: 5px;
-  left: 0;
-  width: 100%;
-  height: 1px;
-}
-.corner.tl {
-  top: -6px;
-  left: -6px;
-}
-.corner.tr {
-  top: -6px;
-  right: -6px;
-}
-.corner.bl {
-  bottom: -6px;
-  left: -6px;
-}
-.corner.br {
-  bottom: -6px;
-  right: -6px;
+/* Tipo 4 · card con tratamiento diferenciado: gráfica a sangre sobre lavado
+   de marca. La serie se pega al fondo, sin padding inferior. */
+.m-trend {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, #f2fafd 0%, #e4f2f8 100%);
+  border: 1px solid #cfe6f0;
+  border-radius: var(--r-card);
+  box-shadow: var(--sh-base);
 }
 
-.elev-sm {
-  box-shadow: var(--shadow-sm);
+.m-dark {
+  position: relative;
+  overflow: hidden;
+  background: var(--grad-dark);
+  border-radius: var(--r-card-sm);
+  box-shadow: var(--sh-dark);
+  color: var(--dark-fg);
 }
-.elev-md {
-  box-shadow: var(--shadow-md);
+.m-dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--hatch-dark);
 }
-.elev-lg {
-  box-shadow: var(--shadow-lg);
-}
-
-.grid-bg {
-  background-color: var(--bg);
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 39px,
-      color-mix(in srgb, var(--ink) 3%, transparent) 39px 40px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 39px,
-      color-mix(in srgb, var(--ink) 3%, transparent) 39px 40px
-    );
-}
-.grid-bg-strong {
-  background-color: var(--bg);
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      transparent 0 31px,
-      color-mix(in srgb, var(--ink) 5%, transparent) 31px 32px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 31px,
-      color-mix(in srgb, var(--ink) 5%, transparent) 31px 32px
-    );
+/* Textura firma (asset IA, guilloché). Invisible hasta definir --tex-dark. */
+.m-dark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--tex-dark) center / 440px;
+  mix-blend-mode: screen;
+  opacity: 0.16;
 }
 
-@keyframes ah-glow {
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 0.85;
-  }
+/* ── Elemento firma · regleta de ticks (SKIN) ── */
+.ticks {
+  height: 10px;
+  background: repeating-linear-gradient(
+    90deg,
+    currentColor 0 1px,
+    transparent 1px 6px
+  );
+  -webkit-mask-image: linear-gradient(90deg, #000 58%, transparent);
+  mask-image: linear-gradient(90deg, #000 58%, transparent);
 }
+/* Regleta con la quinta marca más alta: dos capas ancladas abajo, no un
+   gradiente uniforme (la prosa del SKIN lo pide, su snippet no lo hacía). */
+.ticks-5 {
+  height: 10px;
+  background:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 30px)
+      bottom / 100% 10px no-repeat,
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 6px)
+      bottom / 100% 6px no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, #000 58%, transparent);
+  mask-image: linear-gradient(90deg, #000 58%, transparent);
+}
+
+/* ── Estado inactivo / vacío ── */
+.hatch-empty {
+  background-image: var(--hatch);
+}
+
 @keyframes ah-in {
   from {
     opacity: 0;
@@ -262,8 +423,5 @@
   }
 }
 .ah-view {
-  animation: ah-in 0.28s ease both;
-}
-.ah-glow {
-  animation: ah-glow 6s ease-in-out infinite;
+  animation: ah-in var(--dur-panel) var(--ease-in) both;
 }

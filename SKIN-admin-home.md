@@ -108,9 +108,82 @@ estado ni marca. Cada uno identifica siempre lo mismo en todo el sitio.
 Las **transferencias** no llevan matiz: usan `--muted`. Mueven dinero, no
 lo gastan, y no deben competir en el bento.
 
+### Escala categórica de gasto (donut/legend)
+
+Las categorías de gasto (súper, restaurante, salud…) NO usan los matices de
+familia ni la marca — serían un arcoíris genérico. Usan una **rampa de acero
+fría de un solo eje**, aplicada **ordenada por monto** (la categoría mayor toma
+el tono más oscuro). Baja croma, no toca `--brand` ni estado.
+
+```css
+--cat-1: #2B4048;  --cat-2: #3C5A67;  --cat-3: #517483;
+--cat-4: #6B8F9C;  --cat-5: #8FA9B3;  --cat-6: #B4C6CD;
+```
+
 > Se descartó un cuarto matiz terracota/arena: caía a ~20–45°, encima de
 > `danger` (4°) y `warn` (36°). Tres hues bien separados > cuatro que
 > mienten sobre el estado.
+
+## Umbrales de estado
+
+El motor define la semántica (`ok`/`danger`/`warn`) pero no cuándo dispara.
+Para este dominio:
+
+| Señal | Umbral | Color |
+|---|---|---|
+| Utilización de una tarjeta | `< 80%` | `--brand` (vivo, sano) |
+| Utilización de una tarjeta | `>= 80%` | `--danger` (fuga inminente) |
+| Utilización de una tarjeta | `>= 100%` | `--danger` + chip de sobregiro |
+
+**80% es el único umbral del sistema.** Antes convivían dos (el gauge
+disparaba a 80 y las barras a 100): una tarjeta al 96% se pintaba de marca,
+que es exactamente lo que el motor prohíbe ("marca para negativo → eso es
+`danger`").
+
+## Rojo sobre superficie oscura
+
+`--danger` (#D92D20) sobre `--dark-a` da 3.5:1 — insuficiente a 12px. La
+card oscura usa un escalón aclarado, y **uno solo** para toda la card:
+
+```css
+--danger-on-dark: #FF6B5E;   /* 4.9:1 sobre #16242E */
+```
+
+## Personas
+
+Las personas del hogar necesitan color propio para sus chips. No pueden
+tomar `--brand` (196°), `--danger` (4°), `--ok` (148°) ni `--warn` (36°):
+una persona no es un estado ni la identidad del producto.
+
+```css
+--p-1: #C2703D;   /*  25° ámbar quemado */
+--p-2: #7A5AA8;   /* 268° violeta       */
+--p-3: #2E7D6B;   /* 168° verde azulado */
+```
+
+Se asignan por orden de alta y no cambian.
+
+## Tipo 4 · Card con tratamiento diferenciado
+
+El motor deja los tintes como placeholder. Aquí es la **card de tendencia**:
+gráfica a sangre sobre un lavado de marca muy bajo, para que la serie
+temporal se lea como pantalla de instrumento y no como card más.
+
+```css
+background: linear-gradient(160deg, #F2FAFD 0%, #E4F2F8 100%);
+border: 1px solid #CFE6F0;
+```
+
+## Tipo 5 · Escalones tonales
+
+Secuencia de tinte de marca **8% → 20%**, en fila y en orden, entre la card
+base y la dominante. Nunca salpicados.
+
+```css
+--step-1: color-mix(in srgb, var(--brand) 8%, #fff);
+--step-2: color-mix(in srgb, var(--brand) 14%, #fff);
+--step-3: color-mix(in srgb, var(--brand) 20%, #fff);
+```
 
 ## Elemento firma específico
 

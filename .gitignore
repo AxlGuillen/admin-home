@@ -41,3 +41,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Artefactos de sesión de Playwright MCP y capturas de validación de diseño
+.playwright-mcp/
+/analisis-v*.png
+/confirm-*.png

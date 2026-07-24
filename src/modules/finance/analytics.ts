@@ -11,6 +11,9 @@ export type CardUtilization = {
   color: string | null;
   debtCents: number;
   limitCents: number | null;
+  /** Chip de dueño (home_people); opcionales hasta que el wiring los pueble. */
+  ownerInitial?: string | null;
+  ownerColor?: string | null;
 };
 export type Subscription = {
   name: string;

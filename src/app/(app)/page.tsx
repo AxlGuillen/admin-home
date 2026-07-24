@@ -32,7 +32,7 @@ export default async function DashboardPage() {
               ? formatMoney(overview.totals.debitBalanceCents)
               : "—"
           }
-          tone="pos"
+          tone="ok"
         />
         <Kpi
           label="Deuda de crédito"

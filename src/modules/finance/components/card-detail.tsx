@@ -56,7 +56,7 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
               tone={
                 utilizationPct !== null && utilizationPct >= 80
                   ? "danger"
-                  : "pos"
+                  : "ok"
               }
             />
             <Kpi
@@ -69,7 +69,7 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
         ) : (
           <>
             <Kpi label="Saldo actual" value={pesos(totals.balanceCents ?? 0)} />
-            <Kpi label="Ingresos" value={pesos(totals.inflowCents)} tone="pos" />
+            <Kpi label="Ingresos" value={pesos(totals.inflowCents)} tone="ok" />
             <Kpi label="Gastos / salidas" value={pesos(totals.spendCents)} />
             <Kpi label="Meses" value={String(data.months.length)} />
           </>
