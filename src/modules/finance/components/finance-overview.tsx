@@ -140,11 +140,22 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
             ) : undefined
           }
           footer={
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-white/70">Deuda de crédito</span>
-              <span className="tnum font-semibold text-white">
-                {pesos(totals.currentDebtCents)}
-              </span>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-white/70">Promedio mensual</span>
+                <span className="tnum font-semibold text-white">
+                  {pesosShort(
+                    Math.round(totals.spendCents / (data.byMonth.length || 1)),
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-white/70">Mes más alto</span>
+                <span className="tnum font-semibold text-white">
+                  {monthLabel(data.byMonth[maxIndex]?.month ?? "")} ·{" "}
+                  {pesosShort(maxSpend)}
+                </span>
+              </div>
             </div>
           }
         />
@@ -240,7 +251,7 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
             </div>
             <div className="flex flex-1 flex-col gap-1.5">
               {categoryData.slice(0, 6).map((c) => (
-                <div key={c.category} className="flex items-center gap-2 text-xs">
+                <div key={c.category} className="flex items-center gap-2 text-xs font-semibold">
                   <span
                     className="size-2 flex-none rounded-full"
                     style={{ background: c.fill }}

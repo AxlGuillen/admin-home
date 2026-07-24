@@ -349,15 +349,26 @@
     transparent 60%
   );
 }
-/* Textura firma (asset IA, topográfica). Invisible hasta definir --tex-brand. */
+/* Textura firma (topográfica). Mosaico grande y opacidad baja: es relieve de
+   fondo, no un patrón. Si compite con la cifra, está mal calibrada. */
 .m-brand::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: var(--tex-brand) center / 520px;
+  background: var(--tex-brand) center / 1100px;
+  -webkit-mask-image: radial-gradient(
+    120% 100% at 100% 100%,
+    #000 20%,
+    transparent 72%
+  );
+  mask-image: radial-gradient(
+    120% 100% at 100% 100%,
+    #000 20%,
+    transparent 72%
+  );
   mix-blend-mode: soft-light;
-  opacity: 0.4;
+  opacity: 0.28;
 }
 /* Tipo 5 · escalones tonales: secuencia 8% -> 14% -> 20% entre la card base y
    la dominante. Van en fila y en orden, nunca salpicados. */
