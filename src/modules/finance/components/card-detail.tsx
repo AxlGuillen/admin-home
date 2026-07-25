@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 
-import { Chip, Dark, Dominant, Gauge, Kpi, Panel } from "@/components/blueprint";
+import {
+  Chip,
+  Dark,
+  Delta,
+  Dominant,
+  Gauge,
+  Kpi,
+  Panel,
+} from "@/components/blueprint";
 import {
   ChartContainer,
   ChartTooltip,
@@ -68,6 +76,18 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
   const monthOut = monthMovements
     .filter((m) => m.flow === "out")
     .reduce((n, m) => n + m.amountCents, 0);
+  const outCount = monthMovements.filter((m) => m.flow === "out").length;
+  const avgTicket = outCount > 0 ? Math.round(monthOut / outCount) : 0;
+
+  // Gasto del mes seleccionado contra el inmediato anterior del histórico.
+  const selectedIdx = data.months.findIndex((m) => m.month === selected);
+  const prevMonth = selectedIdx > 0 ? data.months[selectedIdx - 1] : undefined;
+  const thisMonth = data.months[selectedIdx];
+  const spendDelta =
+    prevMonth && thisMonth && prevMonth.spendCents > 0
+      ? ((thisMonth.spendCents - prevMonth.spendCents) / prevMonth.spendCents) *
+        100
+      : null;
 
   return (
     <div className="space-y-4">
@@ -116,6 +136,16 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
                 value={short(totals.spendCents)}
                 step={3}
                 ticks
+                delta={
+                  spendDelta !== null && prevMonth ? (
+                    <Delta
+                      value={`${Math.abs(spendDelta).toFixed(0)}%`}
+                      direction={spendDelta >= 0 ? "up" : "down"}
+                      tone={spendDelta >= 0 ? "danger" : "ok"}
+                    />
+                  ) : undefined
+                }
+                hint={prevMonth ? `vs ${monthLabel(prevMonth.month)}` : undefined}
               />
               <Kpi
                 label="Pagos aplicados"
@@ -273,6 +303,85 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
         </Panel>
       )}
 
+      {/* Fugas detectadas: goteo recurrente y posible cobro doble */}
+      {(data.recurring.length > 0 || data.duplicates.length > 0) && (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {data.recurring.length > 0 && (
+            <Panel
+              title="Comercios recurrentes"
+              subtitle="Aparecen en 3 o más meses: el goteo que no se ve de un solo cargo."
+            >
+              <div className="space-y-2">
+                {data.recurring.slice(0, 6).map((r) => (
+                  <div
+                    key={r.name}
+                    className="flex items-center gap-2 text-xs font-semibold"
+                  >
+                    <span className="nm flex-1">{r.name}</span>
+                    <Chip tone="neutral" numeric>
+                      {r.count}×
+                    </Chip>
+                    <span className="text-ink-mut tnum w-[86px] flex-none text-right font-normal">
+                      {pesos(r.perMonthCents)}/mes
+                    </span>
+                    <span className="tnum w-[100px] flex-none text-right">
+                      {pesos(r.totalCents)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-line mt-3 flex items-center justify-between border-t pt-3 text-xs">
+                <span className="text-ink-mut font-semibold">
+                  {data.recurring.length} comercios recurrentes
+                </span>
+                <span className="tnum text-ink">
+                  {pesos(
+                    data.recurring.reduce((n, r) => n + r.totalCents, 0),
+                  )}
+                </span>
+              </div>
+            </Panel>
+          )}
+
+          {data.duplicates.length > 0 ? (
+            <Dark
+              label="Posible cobro doble"
+              keyValue={String(data.duplicates.length)}
+            >
+              <p className="text-dark-fg/70 mb-3 text-[11px]">
+                Mismo comercio y mismo monto dentro de 3 días. Revisa que no sea
+                un cargo repetido.
+              </p>
+              <div className="space-y-2">
+                {data.duplicates.slice(0, 4).map((d, i) => (
+                  <div
+                    key={`${d.description}-${i}`}
+                    className="flex items-center gap-2 text-xs font-semibold"
+                  >
+                    <span className="nm text-dark-fg/90 flex-1">
+                      {d.description}
+                    </span>
+                    <span className="text-dark-fg/55 tnum flex-none text-[10px] font-normal">
+                      {d.dates.map((x) => x.slice(5)).join(" · ")}
+                    </span>
+                    <span className="tnum text-danger-on-dark flex-none">
+                      {pesos(d.amountCents)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Dark>
+          ) : (
+            <Panel
+              title="Sin cargos duplicados"
+              subtitle="No hay dos cargos idénticos del mismo comercio en 3 días."
+            >
+              <div className="hatch-empty h-16 rounded-[var(--r-el)]" />
+            </Panel>
+          )}
+        </div>
+      )}
+
       {/* Top 5 cargos del mes + tabla de movimientos */}
       <div className="grid gap-4 lg:grid-cols-[1fr_1.6fr]">
         <Panel
@@ -401,11 +510,10 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
 
           <div className="border-line mt-3 flex items-center justify-between border-t pt-3 text-xs">
             <span className="text-ink-mut font-semibold">
-              {monthMovements.length} movimientos
+              {monthMovements.length} movimientos · ticket promedio{" "}
+              <span className="tnum text-ink">{pesos(avgTicket)}</span>
             </span>
-            <span className="tnum text-ink">
-              Salida {pesos(monthOut)}
-            </span>
+            <span className="tnum text-ink">Salida {pesos(monthOut)}</span>
           </div>
         </Panel>
       </div>

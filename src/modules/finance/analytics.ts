@@ -92,6 +92,23 @@ export type CardMovement = {
   category: string | null;
   flow: "in" | "out";
 };
+export type RecurringMerchant = {
+  /** Nombre normalizado del comercio. */
+  name: string;
+  /** Meses distintos en los que aparece. */
+  months: number;
+  count: number;
+  totalCents: number;
+  perMonthCents: number;
+};
+
+export type DuplicateCharge = {
+  description: string;
+  amountCents: number;
+  /** Fechas de los cargos idénticos, ordenadas. */
+  dates: string[];
+};
+
 export type CardDetail = {
   card: {
     id: string;
@@ -106,6 +123,8 @@ export type CardDetail = {
   byCategory: CategorySlice[];
   subscriptions: Subscription[];
   movements: CardMovement[];
+  recurring: RecurringMerchant[];
+  duplicates: DuplicateCharge[];
   totals: {
     balanceCents: number | null;
     limitCents: number | null;
@@ -114,6 +133,20 @@ export type CardDetail = {
     inflowCents: number;
   };
 };
+
+// Los bancos ensucian la descripción con el procesador de pago y el número de
+// sucursal: "MERPAGO*ELTORITO", "FAR GUAD 1608". Para agrupar por comercio hay
+// que quitar ambos, o el mismo negocio se cuenta como varios.
+const PROCESSOR = /^(MERPAGO|MERCADOPAGO|CLIP MX|PAYCLIP|DLO|ZTL|TCONECT|SPEI)\s*\*?\s*/i;
+
+export function merchantKey(description: string): string {
+  return description
+    .toUpperCase()
+    .replace(PROCESSOR, "")
+    .replace(/\s*\d{3,}\s*$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 export async function getCardDetail(cardId: string): Promise<CardDetail | null> {
   await requireHousehold();
@@ -248,6 +281,69 @@ export async function getCardDetail(cardId: string): Promise<CardDetail | null> 
     .filter((s) => s.months >= 2)
     .sort((a, b) => b.perMonthCents - a.perMonthCents);
 
+  // Comercios recurrentes: el goteo que la lista de suscripciones conocidas no ve.
+  // Solo salidas; un pago recibido dos veces no es una fuga.
+  const merchants = new Map<
+    string,
+    { months: Set<string>; count: number; total: number }
+  >();
+  for (const m of movements) {
+    if (m.flow !== "out") continue;
+    const key = merchantKey(m.description);
+    if (!key) continue;
+    const e = merchants.get(key) ?? {
+      months: new Set<string>(),
+      count: 0,
+      total: 0,
+    };
+    if (m.month) e.months.add(m.month);
+    e.count += 1;
+    e.total += m.amountCents;
+    merchants.set(key, e);
+  }
+  const recurring: RecurringMerchant[] = [...merchants.entries()]
+    .map(([name, e]) => ({
+      name,
+      months: e.months.size,
+      count: e.count,
+      totalCents: e.total,
+      perMonthCents: Math.round(e.total / Math.max(e.months.size, 1)),
+    }))
+    .filter((m) => m.months >= 3)
+    .sort((a, b) => b.totalCents - a.totalCents);
+
+  // Posible cobro doble: mismo comercio, mismo monto, dentro de 3 días.
+  const dupMap = new Map<string, string[]>();
+  for (const m of movements) {
+    if (m.flow !== "out" || !m.date) continue;
+    const key = `${merchantKey(m.description)}|${m.amountCents}`;
+    dupMap.set(key, [...(dupMap.get(key) ?? []), m.date]);
+  }
+  const duplicates: DuplicateCharge[] = [];
+  for (const [key, dates] of dupMap) {
+    if (dates.length < 2) continue;
+    const sorted = [...dates].sort();
+    const close = sorted.filter((d, i) => {
+      const prev = sorted[i - 1];
+      const next = sorted[i + 1];
+      const within = (a?: string, b?: string) =>
+        a && b
+          ? Math.abs(
+              (new Date(b).getTime() - new Date(a).getTime()) / 86400000,
+            ) <= 3
+          : false;
+      return within(prev, d) || within(d, next);
+    });
+    if (close.length < 2) continue;
+    const [name, cents] = key.split("|");
+    duplicates.push({
+      description: name,
+      amountCents: Number(cents),
+      dates: close,
+    });
+  }
+  duplicates.sort((a, b) => b.amountCents - a.amountCents);
+
   const latestMonth = monthList[monthList.length - 1];
 
   return {
@@ -262,6 +358,8 @@ export async function getCardDetail(cardId: string): Promise<CardDetail | null> 
     },
     months: monthList,
     byCategory,
+    recurring,
+    duplicates,
     subscriptions,
     movements: movements.sort((a, b) =>
       (b.date ?? "").localeCompare(a.date ?? ""),

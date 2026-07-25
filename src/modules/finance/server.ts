@@ -6,9 +6,11 @@ export type {
   CardMovement,
   CardUtilization,
   CategorySlice,
+  DuplicateCharge,
   FeeLine,
   FinanceOverview,
   MonthPoint,
+  RecurringMerchant,
   Subscription,
 } from "./analytics";
 export {
