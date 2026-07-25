@@ -32,6 +32,7 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
   const [selected, setSelected] = useState(
     monthKeys[monthKeys.length - 1] ?? "",
   );
+  const [sortBy, setSortBy] = useState<"date" | "amount">("date");
 
   const utilizationPct =
     card.isCredit && totals.limitCents && totals.limitCents > 0
@@ -50,7 +51,23 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
     fill: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
   }));
 
-  const monthMovements = data.movements.filter((m) => m.month === selected);
+  const monthMovements = data.movements
+    .filter((m) => m.month === selected)
+    .sort((a, b) =>
+      sortBy === "amount"
+        ? b.amountCents - a.amountCents
+        : (b.date ?? "").localeCompare(a.date ?? ""),
+    );
+
+  // Top 5 cargos del mes: solo salidas, que es donde se busca la fuga.
+  const topCharges = monthMovements
+    .filter((m) => m.flow === "out")
+    .sort((a, b) => b.amountCents - a.amountCents)
+    .slice(0, 5);
+  const topMax = topCharges[0]?.amountCents ?? 0;
+  const monthOut = monthMovements
+    .filter((m) => m.flow === "out")
+    .reduce((n, m) => n + m.amountCents, 0);
 
   return (
     <div className="space-y-4">
@@ -256,10 +273,81 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
         </Panel>
       )}
 
-      <Panel>
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2.5">
-          <h4 className="text-[13px] font-extrabold">Movimientos</h4>
-          <div className="flex flex-wrap">
+      {/* Top 5 cargos del mes + tabla de movimientos */}
+      <div className="grid gap-4 lg:grid-cols-[1fr_1.6fr]">
+        <Panel
+          title={`Top 5 cargos · ${monthLabel(selected)}`}
+          subtitle={
+            monthOut > 0
+              ? `${Math.round((topCharges.reduce((n, m) => n + m.amountCents, 0) / monthOut) * 100)}% de la salida del mes`
+              : undefined
+          }
+        >
+          {topCharges.length === 0 ? (
+            <p className="text-ink-mut py-6 text-center text-xs">
+              Sin cargos este mes.
+            </p>
+          ) : (
+            <ol className="space-y-2.5">
+              {topCharges.map((m, i) => (
+                <li key={`${m.description}-${i}`} className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-semibold">
+                    <span className="text-ink-mut tnum w-3 flex-none text-[10px]">
+                      {i + 1}
+                    </span>
+                    <span className="nm flex-1">{m.description}</span>
+                    <span className="tnum flex-none">
+                      {pesos(m.amountCents)}
+                    </span>
+                  </div>
+                  <div className="ml-5 h-1.5 overflow-hidden rounded-full bg-[var(--line-2)]">
+                    <div
+                      className="bg-d-credito h-full rounded-full"
+                      style={{
+                        width: `${topMax > 0 ? (m.amountCents / topMax) * 100 : 0}%`,
+                      }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Panel>
+
+        <Panel>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2.5">
+            <h4 className="text-[13px] font-extrabold">Movimientos</h4>
+            <div className="flex items-center gap-2">
+              <span className="text-ink-mut font-mono text-[9px] font-bold tracking-[0.04em] uppercase">
+                Orden
+              </span>
+              <div className="flex" role="group" aria-label="Ordenar por">
+                {(
+                  [
+                    { key: "date", label: "Fecha" },
+                    { key: "amount", label: "Monto" },
+                  ] as const
+                ).map((o) => (
+                  <button
+                    key={o.key}
+                    type="button"
+                    onClick={() => setSortBy(o.key)}
+                    aria-pressed={sortBy === o.key}
+                    className={cn(
+                      "border-line -ml-px border px-2.5 py-1 text-[10px] font-bold first:rounded-l-[var(--r-el-sm)] last:rounded-r-[var(--r-el-sm)]",
+                      sortBy === o.key
+                        ? "bg-ink relative z-10 border-[var(--ink)] text-white"
+                        : "text-ink-2 hover:bg-line-2",
+                    )}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-2 flex flex-wrap">
             {monthKeys.map((m) => (
               <button
                 key={m}
@@ -276,41 +364,51 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
               </button>
             ))}
           </div>
-        </div>
-        <div>
-          {monthMovements.length === 0 ? (
-            <p className="text-ink-mut py-6 text-center text-xs">
-              Sin movimientos este mes.
-            </p>
-          ) : (
-            monthMovements.map((m, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3.5 border-line/60 border-b text-xs font-semibold"
-              >
-                <span className="text-ink-mut tnum w-11 shrink-0 text-[11px] font-normal">
-                  {m.date?.slice(5) ?? ""}
-                </span>
-                <span className="flex-1 truncate">{m.description}</span>
-                {m.category && (
-                  <span className="text-ink-mut border-line shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold">
-                    {categoryLabel(m.category)}
-                  </span>
-                )}
-                <span
-                  className={cn(
-                    "tnum w-[110px] shrink-0 text-right",
-                    m.flow === "in" && "text-ok",
-                  )}
+
+          <div>
+            {monthMovements.length === 0 ? (
+              <p className="text-ink-mut py-6 text-center text-xs">
+                Sin movimientos este mes.
+              </p>
+            ) : (
+              monthMovements.map((m, i) => (
+                <div
+                  key={i}
+                  className="border-line/60 flex items-center gap-3.5 border-b py-2 text-xs font-semibold last:border-0"
                 >
-                  {m.flow === "in" ? "+" : "−"}
-                  {pesos(m.amountCents).replace(/^-/, "")}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      </Panel>
+                  <span className="text-ink-mut tnum w-11 shrink-0 text-[11px] font-normal">
+                    {m.date?.slice(5) ?? ""}
+                  </span>
+                  <span className="nm flex-1">{m.description}</span>
+                  {m.category && (
+                    <span className="text-ink-mut border-line shrink-0 rounded-full border px-2 py-0.5 text-[9px] font-bold">
+                      {categoryLabel(m.category)}
+                    </span>
+                  )}
+                  <span
+                    className={cn(
+                      "tnum w-[110px] shrink-0 text-right",
+                      m.flow === "in" && "text-ok",
+                    )}
+                  >
+                    {m.flow === "in" ? "+" : "−"}
+                    {pesos(m.amountCents).replace(/^-/, "")}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="border-line mt-3 flex items-center justify-between border-t pt-3 text-xs">
+            <span className="text-ink-mut font-semibold">
+              {monthMovements.length} movimientos
+            </span>
+            <span className="tnum text-ink">
+              Salida {pesos(monthOut)}
+            </span>
+          </div>
+        </Panel>
+      </div>
     </div>
   );
 }
