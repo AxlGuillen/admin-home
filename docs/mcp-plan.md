@@ -63,11 +63,13 @@ Se parte en tres capas:
 Beneficio inmediato: el cómputo se prueba con Vitest. Hoy la lógica de
 agregación no tiene un solo test.
 
-### Fase 2 · Servidor MCP con el núcleo de herramientas
+### Fase 2 · Servidor MCP con el núcleo de herramientas ✅
+
+Vive en [`mcp/`](../mcp/README.md), registrado en `.mcp.json` como `admin-home`.
 
 | Tool | Para qué |
 | --- | --- |
-| `list_cards` | Tarjetas, dueño, ciclo, límite |
+| `list_cards` | Tarjetas, dueño, ciclo, límite, **meses cargados** |
 | `get_household_overview` | Totales, deuda, utilización, fugas |
 | `get_card_detail` | Una tarjeta: meses, categorías, recurrentes |
 | `search_movements` | Filtros por comercio, fecha, monto, categoría, tarjeta, persona |
@@ -75,6 +77,17 @@ agregación no tiene un solo test.
 | `spending_by_month` | Serie temporal |
 | `find_recurring_merchants` | El goteo que la lista de suscripciones no ve |
 | `find_duplicate_charges` | Cobros dobles |
+
+Tres cosas salieron distinto a lo planeado y valen la pena:
+
+- **Todo sale en pesos, no en centavos.** El resto del sistema usa centavos, pero
+  aquí el consumidor es un LLM que lee el número tal cual: `196051` se convierte
+  en una respuesta con dos órdenes de magnitud de más.
+- **`scope` explícito para las clases de cargo.** `regular` (default) es el que
+  cuadra con el corte; `with_msi` suma las parcialidades; `all` agrega comisiones
+  y la compra MSI completa, **que se cuenta doble con sus parcialidades**.
+- **Paginación obligatoria en la lectura.** PostgREST corta en 1,000 filas y no
+  avisa: sin `.range()` los meses viejos simplemente no existían.
 
 ### Fase 3 · Recurso de contexto
 

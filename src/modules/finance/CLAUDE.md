@@ -18,7 +18,9 @@ estados de cuenta (calendario de pagos, utilización, gasto) todavía no existe.
 
 Lo que exporta `index.ts`. Nada más del módulo puede importarse desde fuera.
 
-Dos entry points: `index.ts` (cliente + servidor) y `server.ts` (solo servidor).
+Tres entry points: `index.ts` (cliente + servidor), `server.ts` (solo servidor) y
+`analytics-core.ts` (sin runtime: cómputo puro + fetch que **recibe** el cliente de
+Supabase, para el servidor MCP en `mcp/`).
 
 | Export | Dónde | Para qué |
 | ------ | ----- | -------- |
@@ -35,6 +37,9 @@ Dos entry points: `index.ts` (cliente + servidor) y `server.ts` (solo servidor).
 | `statementImportSchema`, `statementTransactionImportSchema` | schemas | Contrato de extracción del PDF (en pesos). |
 | `statementSchema`, `statementTransactionSchema`, `txnKindSchema`, `TXN_KIND_LABELS` | schemas | Modelo de dominio. |
 | `Statement`, `StatementTransaction`, `StatementWithTransactions`, `StatementImport`, `TxnKind` | tipos | Modelo de dominio. |
+| `getCardDetail`, `getFinanceOverview` | `server.ts` | Análisis con la sesión del request. |
+| `computeCardDetail`, `computeFinanceOverview`, `computeRecurring`, `computeDuplicates`, `merchantKey`, `NON_SPEND` | `analytics-core.ts` | Cómputo puro. **Aquí viven las reglas de qué cuenta como gasto**; el MCP las reusa para no divergir de la app. |
+| `fetchCardDetailRows`, `fetchOverviewRows` | `analytics-core.ts` | Lecturas que reciben el cliente. |
 
 ## Tablas
 

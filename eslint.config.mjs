@@ -27,6 +27,7 @@ const eslintConfig = defineConfig([
         // carpeta; `fileInternalPath` distingue index.ts del resto de sus archivos.
         { type: "module", pattern: "src/modules/*", capture: ["moduleName"] },
         { type: "app", pattern: "src/app" },
+        { type: "mcp", pattern: "mcp" },
         { type: "shared", pattern: "src/shared" },
         { type: "ui", pattern: "src/components" },
         { type: "hooks", pattern: "src/hooks" },
@@ -65,6 +66,18 @@ const eslintConfig = defineConfig([
                 },
               },
             },
+            // El servidor MCP corre fuera de Next: consume módulos igual que `app`,
+            // pero solo por entry points que no importen `server-only`.
+            {
+              from: { element: { type: "mcp" } },
+              allow: {
+                to: {
+                  element: {
+                    types: { anyOf: ["mcp", "module", "shared", "lib"] },
+                  },
+                },
+              },
+            },
             {
               from: { element: { type: "shared" } },
               allow: { to: { element: { types: { anyOf: ["shared", "lib"] } } } },
@@ -92,12 +105,12 @@ const eslintConfig = defineConfig([
                 to: {
                   element: {
                     type: "module",
-                    fileInternalPath: "!(index|server).ts",
+                    fileInternalPath: "!(index|server|analytics-core).ts",
                   },
                 },
               },
               message:
-                "Importa el módulo por su entry point: @/modules/<nombre> o @/modules/<nombre>/server.",
+                "Importa el módulo por su entry point: @/modules/<nombre>, /server o /analytics-core.",
             },
             // …salvo el propio módulo, que sí ve sus archivos internos.
             {

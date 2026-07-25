@@ -10,11 +10,14 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
+    "mcp": "tsx mcp/server.ts",
+    "mcp:login": "tsx mcp/login.ts",
     "db:types": "supabase gen types typescript --project-id impscwgourdxhdejwkhe --schema public > src/shared/supabase/database.types.ts",
     "check": "npm run typecheck && npm run lint && npm run test:run"
   },
   "dependencies": {
     "@animateicons/react": "^0.3.4",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.7",
     "class-variance-authority": "^0.7.1",
@@ -48,6 +51,7 @@
     "shadcn": "^4.13.1",
     "supabase": "^2.109.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.1",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }

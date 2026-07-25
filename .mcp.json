@@ -1,5 +1,14 @@
 {
   "mcpServers": {
+    "admin-home": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "tsx",
+        "mcp/server.ts"
+      ],
+      "env": {}
+    },
     "playwright": {
       "type": "stdio",
       "command": "npx",
