@@ -20,7 +20,7 @@ Lo que exporta `index.ts`. Nada más del módulo puede importarse desde fuera.
 
 Tres entry points: `index.ts` (cliente + servidor), `server.ts` (solo servidor) y
 `analytics-core.ts` (sin runtime: cómputo puro + fetch que **recibe** el cliente de
-Supabase, para el servidor MCP en `mcp/`).
+Supabase, para el módulo `mcp`, que construye el suyo con el token del request).
 
 | Export | Dónde | Para qué |
 | ------ | ----- | -------- |

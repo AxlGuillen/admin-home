@@ -15,8 +15,12 @@ export async function proxy(request: NextRequest) {
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
+    // Con la query: /oauth/consent lleva el `authorization_id` y sin él el usuario
+    // vuelve del login a una pantalla que ya no sabe qué estaba autorizando.
+    const target = `${pathname}${request.nextUrl.search}`;
     url.pathname = "/login";
-    url.searchParams.set("next", pathname);
+    url.search = ""; // clone() arrastra la query original; sin limpiarla se duplica
+    if (target !== "/") url.searchParams.set("next", target);
     return NextResponse.redirect(url);
   }
 
@@ -32,7 +36,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip static assets and images: they need no session and would pay the refresh cost on every request.
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif)$).*)",
+    // Skip static assets, the MCP transports and the OAuth discovery documents: those
+    // authenticate in their own handler, and a redirect to /login would replace the 401
+    // that clients need to discover the authorization server. /oauth/consent stays in.
+    "/((?!_next/static|_next/image|favicon.ico|\\.well-known|api/mcp|api/sse|api/message|api/health|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif)$).*)",
   ],
 };

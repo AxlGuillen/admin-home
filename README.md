@@ -69,11 +69,63 @@ por `anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}`.
 El repo es público, así que el workflow ignora PRs de forks: sin esa guarda cualquiera
 podría consumir tu plan abriendo PRs.
 
+## Conector MCP
+
+El servidor MCP se sirve en `/api/mcp` y se autentica con el **servidor OAuth 2.1 de
+Supabase**, así que los tokens son JWT nativos y RLS aplica sin cambiar ninguna política.
+Detalles en [`src/modules/mcp/CLAUDE.md`](src/modules/mcp/CLAUDE.md).
+
+### Configuración (una sola vez)
+
+Todo esto es de UI; nada vive en el repo.
+
+**Supabase → Authentication → URL Configuration**
+
+1. **Anota el Site URL actual antes de tocarlo**: es ajuste **de proyecto** y este
+   proyecto Supabase es compartido con las apps `ra_` y `adala_`.
+2. Ponlo en el dominio de producción de esta app.
+
+**Supabase → Authentication → OAuth Server**
+
+3. Enciende **OAuth 2.1 server** (hoy la discovery responde `feature_disabled`).
+4. **Authorization Path** = `/oauth/consent`.
+5. **Deja Dynamic Client Registration apagada.** Supabase emite `aud: "authenticated"`
+   para todo el proyecto, así que con DCR encendida cualquiera podría registrar un
+   cliente y su token llegaría a este endpoint.
+
+**Supabase → Authentication → OAuth Apps**
+
+6. Cliente nuevo `Claude`, con los redirect URIs **exactos** que muestra Claude al
+   agregar el conector (no admiten comodines). Copia el `client_id` y el secreto: el
+   secreto se ve una sola vez.
+
+**Vercel → Environment Variables**
+
+```
+NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+APP_URL, MCP_OAUTH_CLIENT_IDS
+```
+
+Ni `service_role` ni `REDIS_URL`.
+
+**Claude → Settings → Connectors → Add custom connector**
+
+7. URL `https://<dominio>/api/mcp`, y en *Advanced settings* el client id y el secreto.
+
+### Comprobar que quedó
+
+`GET /api/health` revisa las tres cosas que se rompen en silencio: que la discovery de
+Supabase siga viva, que el documento del recurso apunte bien, y que `/api/mcp` sin token
+conteste **401 con `resource_metadata`** — sin ese header ningún cliente descubre el
+authorization server.
+
 ## Módulos
 
-| Módulo    | Estado                                      |
-| --------- | ------------------------------------------- |
-| `finance` | Andamiaje listo, modelo de datos pendiente. |
+| Módulo    | Estado                                        |
+| --------- | --------------------------------------------- |
+| `finance` | Tarjetas, estados de cuenta y análisis.       |
+| `people`  | Personas del hogar, como etiqueta.            |
+| `mcp`     | Servidor MCP remoto de solo lectura.          |
 
 ## Documentación
 

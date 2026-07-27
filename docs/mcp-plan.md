@@ -19,19 +19,41 @@ El MCP propio codifica esas reglas una sola vez.
 
 ## Decisiones
 
-### Autenticación — refresh token local
+### Autenticación — OAuth 2.1 de Supabase
 
 **No se usa `service_role`.** Brinca RLS, y el proyecto Supabase es compartido
 con `ra_` y `adala_`: filtrar esa llave expone las otras apps, no solo el hogar.
 
-`npm run mcp:login` pide credenciales una vez y guarda el `refresh_token` en
-`~/.admin-home/session.json` (chmod 600). El servidor renueva el access token.
-**RLS aplica igual que en la app.**
+El cliente de Supabase se construye con el token del request, así que **RLS aplica
+igual que en la app** y no hay ninguna consulta que filtre por `household_id` a mano.
 
-### Transporte — stdio local
+### Transporte — HTTP remoto autenticado
 
-El servidor corre en la máquina del usuario, lanzado por el cliente MCP. No hay
-endpoint HTTP: sería un servicio público con datos financieros del hogar.
+> Esta decisión reemplaza a la de la v1, que era *"solo stdio; un endpoint HTTP
+> sería un servicio público con los datos financieros de la casa"*.
+
+**La objeción original sigue en pie, y por eso el endpoint no está abierto.** Lo que
+cambió es que ahora hay respuesta: sin un `Authorization: Bearer` válido, `/api/mcp`
+contesta 401 antes de tocar la base. El token lo emite el servidor OAuth 2.1 de
+Supabase tras un consentimiento explícito en `/oauth/consent`, es un JWT nativo, y
+`auth.uid()` resuelve con él — o sea que las políticas de RLS no se tocaron.
+
+Se descartó Auth0: su `sub` es `auth0|abc`, no un UUID, así que `auth.uid()` daría
+`null` y las tablas devolverían cero filas **en silencio**. Habría que reescribir las
+políticas de las 9 tablas y remapear la FK a `auth.users`.
+
+Lo que se ganó: el refresh token ya no vive en `~/.admin-home/session.json` —lo guarda
+Claude y lo canjea directo contra Supabase—, se revoca desde el dashboard, y el
+conector funciona desde el teléfono.
+
+Lo que se perdió, sin adorno: si el deploy se cae no hay MCP (antes había un fallback
+local), y el servidor OAuth de Supabase está en beta. El commit anterior a la
+migración está en el tag `mcp-stdio-last`.
+
+**Dynamic Client Registration queda apagada.** Supabase emite `aud: "authenticated"`
+para todo el proyecto, así que la audiencia no acota nada; con DCR encendida cualquiera
+podría registrar un cliente en el proyecto compartido y su token llegaría al endpoint.
+Con DCR apagada hay un `client_id` y el allowlist de `MCP_OAUTH_CLIENT_IDS` es trivial.
 
 ### Alcance — solo lectura en v1
 
@@ -40,7 +62,7 @@ flujo semi-manual, que ya tiene validación de reconciliación.
 
 ### Ubicación — dentro de este repo
 
-`mcp/` comparte `database.types.ts`, los schemas de Zod y la capa de cómputo.
+`src/modules/mcp/` comparte `database.types.ts`, los schemas de Zod y la capa de cómputo.
 Un repo aparte obligaría a duplicar tipos y a sincronizarlos a mano.
 
 ## Fases
@@ -65,7 +87,7 @@ agregación no tiene un solo test.
 
 ### Fase 2 · Servidor MCP con el núcleo de herramientas ✅
 
-Vive en [`mcp/`](../mcp/README.md), registrado en `.mcp.json` como `admin-home`.
+Vive en [`src/modules/mcp/`](../src/modules/mcp/CLAUDE.md), servido en `/api/mcp`.
 
 | Tool | Para qué |
 | --- | --- |
