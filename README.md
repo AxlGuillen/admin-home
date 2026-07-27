@@ -101,12 +101,25 @@ Todo esto es de UI; nada vive en el repo.
 
 **Vercel → Environment Variables**
 
+Obligatorias:
+
 ```
-NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-APP_URL, MCP_OAUTH_CLIENT_IDS
+NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ```
 
+Opcionales:
+
+- `MCP_OAUTH_CLIENT_IDS` — qué clientes OAuth pueden entrar al MCP. Vacío deja
+  pasar a cualquiera del proyecto Supabase, que es compartido: ponlo en cuanto
+  tengas el `client_id`.
+- `APP_URL` — solo con dominio propio. Si no está, se deriva de
+  `VERCEL_PROJECT_PRODUCTION_URL`, que Vercel inyecta sola.
+
 Ni `service_role` ni `REDIS_URL`.
+
+> El identificador del recurso apunta siempre al **dominio de producción**, incluso
+> desde un preview. Es a propósito —si cambiara por deploy, el conector tendría que
+> reautorizarse cada vez— pero significa que el MCP solo funciona contra producción.
 
 **Claude → Settings → Connectors → Add custom connector**
 

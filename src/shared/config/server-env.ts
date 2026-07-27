@@ -2,12 +2,12 @@ import "server-only";
 
 import { z } from "zod";
 
-import { parseEnv } from "./env";
+import { parseEnv } from "./parse-env";
 
 // Separate from env.ts: that file is evaluated in the client bundle, where these
 // would be undefined and the parse would throw in the browser.
 const serverEnvSchema = z.object({
-  APP_URL: z.url(),
+  APP_URL: z.url().optional(),
   MCP_OAUTH_CLIENT_IDS: z.string().optional(),
 });
 
@@ -20,9 +20,31 @@ const serverEnv = parseEnv(
   "Vercel → Settings → Environment Variables (o .env.local en tu máquina)",
 );
 
-/** Origin without trailing slash. Never derived from the Host header, which is spoofable. */
+const stripSlash = (url: string) => url.replace(/\/+$/, "");
+
+/**
+ * Origen público de la app: el `resource` del MCP y la base del metadata OAuth.
+ *
+ * Nunca sale del header `Host`, que es suplantable. Se resuelve en tres pasos:
+ *
+ * 1. `APP_URL` si está — gana siempre, y es lo que hay que poner con dominio propio.
+ * 2. `VERCEL_PROJECT_PRODUCTION_URL`, que Vercel inyecta sola y **siempre** define,
+ *    incluso en previews. Apunta al dominio estable de producción, que es lo que un
+ *    identificador de recurso OAuth necesita: si cambiara por deploy, el conector
+ *    tendría que reautorizarse cada vez. Viene sin protocolo.
+ * 3. localhost, para desarrollo.
+ *
+ * Ojo con el paso 2: en un preview, el identificador apunta a producción y no a la
+ * URL del preview. Es deliberado —así el conector no se rompe cada deploy— pero
+ * significa que el MCP solo funciona de verdad contra el dominio de producción.
+ */
 export function appUrl(): string {
-  return serverEnv.APP_URL.replace(/\/+$/, "");
+  if (serverEnv.APP_URL) return stripSlash(serverEnv.APP_URL);
+
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (vercel) return `https://${stripSlash(vercel)}`;
+
+  return "http://localhost:3000";
 }
 
 /**
