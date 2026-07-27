@@ -2,6 +2,8 @@ import "server-only";
 
 import { z } from "zod";
 
+import { parseEnv } from "./env";
+
 // Separate from env.ts: that file is evaluated in the client bundle, where these
 // would be undefined and the parse would throw in the browser.
 const serverEnvSchema = z.object({
@@ -9,10 +11,14 @@ const serverEnvSchema = z.object({
   MCP_OAUTH_CLIENT_IDS: z.string().optional(),
 });
 
-const serverEnv = serverEnvSchema.parse({
-  APP_URL: process.env.APP_URL,
-  MCP_OAUTH_CLIENT_IDS: process.env.MCP_OAUTH_CLIENT_IDS,
-});
+const serverEnv = parseEnv(
+  serverEnvSchema,
+  {
+    APP_URL: process.env.APP_URL,
+    MCP_OAUTH_CLIENT_IDS: process.env.MCP_OAUTH_CLIENT_IDS,
+  },
+  "Vercel → Settings → Environment Variables (o .env.local en tu máquina)",
+);
 
 /** Origin without trailing slash. Never derived from the Host header, which is spoofable. */
 export function appUrl(): string {
