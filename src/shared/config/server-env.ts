@@ -7,7 +7,22 @@ import { parseEnv } from "./parse-env";
 // Separate from env.ts: that file is evaluated in the client bundle, where these
 // would be undefined and the parse would throw in the browser.
 const serverEnvSchema = z.object({
-  APP_URL: z.url().optional(),
+  // Solo el origen. Pegar la URL de una página (".../login") produciría el
+  // identificador ".../login/api/mcp", y el conector fallaría con un error que
+  // no menciona la causa.
+  APP_URL: z
+    .url()
+    // Zod v4 encadena los checks aunque `z.url()` ya haya fallado, así que un
+    // valor que ni siquiera es URL llegaría hasta aquí y `new URL` reventaría.
+    .refine((value) => {
+      try {
+        const { pathname, search, hash } = new URL(value);
+        return pathname.replace(/\/+$/, "") === "" && !search && !hash;
+      } catch {
+        return true; // que el error lo dé `z.url()`, que es más claro
+      }
+    }, "debe ser solo el origen, sin ruta (https://tu-app.com, no https://tu-app.com/login)")
+    .optional(),
   MCP_OAUTH_CLIENT_IDS: z.string().optional(),
 });
 

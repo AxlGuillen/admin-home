@@ -58,4 +58,18 @@ describe("appUrl", () => {
       /Faltan variables de entorno/,
     );
   });
+
+  // Copiar la URL del navegador estando en /login es el error natural, y daría
+  // el identificador ".../login/api/mcp" sin que nada se queje.
+  it("rechaza un APP_URL con ruta", async () => {
+    await expect(
+      appUrlWith({ ...CLEAN, APP_URL: "https://admin-home-theta.vercel.app/login" }),
+    ).rejects.toThrow(/solo el origen/);
+  });
+
+  it("acepta el origen con barra final", async () => {
+    await expect(
+      appUrlWith({ ...CLEAN, APP_URL: "https://admin-home-theta.vercel.app/" }),
+    ).resolves.toBe("https://admin-home-theta.vercel.app");
+  });
 });
