@@ -99,6 +99,22 @@
   /* Pendiente el guilloché de la card oscura; hasta entonces solo el hatch. */
   --tex-dark: none;
 
+  /* Cómo se aplica cada textura. Sale a variables porque `multiply` sobre un
+     lienzo oscuro solo apaga: en tema oscuro estas tres cambian, no el asset. */
+  --tex-grain-filter: invert(1);
+  --tex-grain-blend: multiply;
+  --tex-grain-opacity: 0.35;
+  --tex-brand-blend: soft-light;
+  --tex-brand-opacity: 0.28;
+
+  /* Brillo especular de la card de marca (esquina superior derecha). */
+  --brand-specular: rgb(255 255 255 / 0.28);
+
+  /* Tipo 4 · lavado de marca de la card de tendencia. */
+  --trend-a: #f2fafd;
+  --trend-b: #e4f2f8;
+  --trend-line: #cfe6f0;
+
   /* ── SKIN · estado ── */
   --skin-danger: #d92d20;
   --skin-danger-050: #fdecea;
@@ -164,10 +180,12 @@
   /* ── SKIN · danger legible sobre superficie oscura (4.9:1) ── */
   --danger-on-dark: #ff6b5e;
 
-  /* ── SKIN · escalones tonales (tipo 5), 8% → 20% ── */
-  --step-1: color-mix(in srgb, var(--brand) 8%, #fff);
-  --step-2: color-mix(in srgb, var(--brand) 14%, #fff);
-  --step-3: color-mix(in srgb, var(--brand) 20%, #fff);
+  /* ── SKIN · escalones tonales (tipo 5), 8% → 20% ──
+     Se mezclan contra `--surface`, no contra blanco: el escalón es la card base
+     teñida de marca, así que en tema oscuro sigue el sustrato correcto. */
+  --step-1: color-mix(in srgb, var(--brand) 8%, var(--surface));
+  --step-2: color-mix(in srgb, var(--brand) 14%, var(--surface));
+  --step-3: color-mix(in srgb, var(--brand) 20%, var(--surface));
 
   /* ── SKIN · escala categórica de gasto ──
      Rampa de acero fría de un solo eje, ordenada por monto (mayor = más oscuro).
@@ -187,12 +205,21 @@
   --r-el-sm: 9px;
   --r-pill: 999px;
 
-  /* ── DESIGN · elevación (portable) ── */
-  --sh-base: 0 1px 2px rgb(30 45 80 / 0.05), 0 8px 20px rgb(30 45 80 / 0.06);
-  --sh-raise: 0 1px 2px rgb(30 45 80 / 0.08), 0 12px 30px rgb(30 45 80 / 0.12),
-    0 30px 60px rgb(30 45 80 / 0.08), inset 0 1px 0 #fff;
-  --sh-brand: 0 2px 4px rgb(6 54 74 / 0.35), 0 16px 36px rgb(6 54 74 / 0.4),
-    0 36px 70px rgb(6 54 74 / 0.26), inset 0 1px 0 #ffffff33;
+  /* ── DESIGN · elevación (portable) ──
+     El color de la sombra y el filo superior salen a variables porque sobre
+     lienzo oscuro una sombra azul no se ve: la elevación se comunica con el
+     filo, no con la sombra. */
+  --sh-rgb: 30 45 80;
+  --sh-brand-rgb: 6 54 74;
+  --edge-top: #fff;
+  --sh-base: 0 1px 2px rgb(var(--sh-rgb) / 0.05),
+    0 8px 20px rgb(var(--sh-rgb) / 0.06);
+  --sh-raise: 0 1px 2px rgb(var(--sh-rgb) / 0.08),
+    0 12px 30px rgb(var(--sh-rgb) / 0.12), 0 30px 60px rgb(var(--sh-rgb) / 0.08),
+    inset 0 1px 0 var(--edge-top);
+  --sh-brand: 0 2px 4px rgb(var(--sh-brand-rgb) / 0.35),
+    0 16px 36px rgb(var(--sh-brand-rgb) / 0.4),
+    0 36px 70px rgb(var(--sh-brand-rgb) / 0.26), inset 0 1px 0 #ffffff33;
   --sh-dark: 0 2px 4px rgb(16 21 31 / 0.3), 0 12px 28px rgb(16 21 31 / 0.34),
     inset 0 1px 0 #ffffff14;
 
@@ -280,9 +307,9 @@
     z-index: 0;
     pointer-events: none;
     background: var(--tex-grain) center / 320px;
-    filter: invert(1);
-    mix-blend-mode: multiply;
-    opacity: 0.35;
+    filter: var(--tex-grain-filter);
+    mix-blend-mode: var(--tex-grain-blend);
+    opacity: var(--tex-grain-opacity);
   }
   /* Lavado de marca por encima del grano: es luz de ambiente, no suciedad. */
   body::after {
@@ -348,7 +375,7 @@
   pointer-events: none;
   background: radial-gradient(
     58% 68% at 100% 0%,
-    rgb(255 255 255 / 0.28),
+    var(--brand-specular),
     transparent 60%
   );
 }
@@ -370,8 +397,8 @@
     #000 20%,
     transparent 72%
   );
-  mix-blend-mode: soft-light;
-  opacity: 0.28;
+  mix-blend-mode: var(--tex-brand-blend);
+  opacity: var(--tex-brand-opacity);
 }
 /* Bisel del pie de sidebar: el dial de ticks detrás del avatar. */
 .m-bezel {
@@ -409,8 +436,8 @@
 .m-trend {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(160deg, #f2fafd 0%, #e4f2f8 100%);
-  border: 1px solid #cfe6f0;
+  background: linear-gradient(160deg, var(--trend-a) 0%, var(--trend-b) 100%);
+  border: 1px solid var(--trend-line);
   border-radius: var(--r-card);
   box-shadow: var(--sh-base);
 }

@@ -59,19 +59,38 @@ recentrarlo en estado colapsado.
 
 ---
 
-## Fase B · Tokenizar (cero cambio visual)
+## Fase B · Tokenizar (cero cambio visual) ✅
 
-Prerrequisito del tema oscuro. Hoy hay valores crudos que impiden invertir:
+Prerrequisito del tema oscuro. Los valores crudos que impedían invertir ya son
+variables, con el mismo valor de antes:
 
-| Dónde | Qué está hardcodeado |
+| Token nuevo | Reemplaza |
 | --- | --- |
-| `.m-trend` | `#f2fafd`, `#e4f2f8`, `#cfe6f0` |
-| `--step-1..3` | mezclan contra `#fff` literal |
-| `--brand-fg` | `#ffffff` |
-| `body::before` | `filter: invert(1)` + `multiply`, calibrado para lienzo claro |
+| `--step-1..3` mezclan contra `var(--surface)` | el `#fff` literal |
+| `--sh-rgb`, `--sh-brand-rgb`, `--edge-top` | los `rgb(30 45 80)` y el `#fff` del filo dentro de `--sh-*` |
+| `--trend-a`, `--trend-b`, `--trend-line` | los tres hex de `.m-trend` |
+| `--brand-specular` | el `rgb(255 255 255 / .28)` de `.m-brand::before` |
+| `--tex-grain-filter/-blend/-opacity` | el `invert(1)` + `multiply` + `.35` de `body::before` |
+| `--tex-brand-blend/-opacity` | el `soft-light` + `.28` de `.m-brand::after` |
 
-Se convierten en variables sin tocar su valor actual. Sin este paso, la Fase C
-se hace a base de excepciones.
+Se dejaron crudos a propósito los valores de superficies que **siempre** son
+oscuras (`--sh-dark`, `--hatch-dark`, el filo de `--sh-brand`) y los `#000` de
+las `mask-image`, que son alfa y no color.
+
+**Verificación:** se comparó el estilo computado de los 5 materiales, los 3
+escalones, el hatch, la regleta y el `body` —30 nodos × 8 propiedades— antes y
+después. Idéntico salvo una diferencia de serialización (`at 100% 0px` →
+`at 100% 0%`), que es la misma posición.
+
+### Lo que el barrido dejó listo para la Fase C
+
+En los componentes **no hay un solo hex hardcodeado**. Todos los `text-white` y
+`bg-white` viven sobre superficies que siguen siendo oscuras en tema oscuro
+(`.m-dark`, `.m-brand`, la píldora activa del nav), así que no se tocan.
+
+La excepción, y es un ítem real de C3: **`bg-ink text-white`** en el chip
+`dark` de `blueprint.tsx` y en el selector de mes de `card-detail.tsx`. En tema
+oscuro `--ink` se aclara, así que eso queda blanco sobre claro.
 
 ---
 

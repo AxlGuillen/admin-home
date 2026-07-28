@@ -1,6 +1,5 @@
 "use client";
 
-import { Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -33,24 +32,11 @@ export function SidebarNav({ collapsed }: { collapsed: boolean }) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className={collapsed ? "px-2 pt-2" : "px-3 pt-3"}>
-        <Labelled collapsed={collapsed} label="Buscar">
-          <div
-            className={cn(
-              "border-line bg-surface text-ink-mut flex items-center rounded-[var(--r-el)] border",
-              collapsed
-                ? "h-9 justify-center px-0"
-                : "gap-2 px-2.5 py-2",
-            )}
-          >
-            <Search className="size-[15px] flex-none" strokeWidth={2} />
-            {!collapsed && <span className="text-xs">Buscar…</span>}
-          </div>
-        </Labelled>
-      </div>
-
       <nav
-        className={cn("flex flex-1 flex-col gap-0.5", collapsed ? "p-2" : "p-3")}
+        className={cn(
+          "flex flex-1 flex-col gap-0.5",
+          collapsed ? "p-2 pt-3" : "p-3",
+        )}
       >
         {!collapsed && (
           <p className="text-ink-mut px-3 pt-2 pb-2 font-mono text-[9px] font-bold tracking-[0.06em] uppercase">
