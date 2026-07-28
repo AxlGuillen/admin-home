@@ -57,7 +57,7 @@ export function AppSidebar({
                 aria-label="Expandir el menú"
                 aria-expanded={false}
                 aria-controls="app-sidebar"
-                className="group/mark relative grid size-7 place-items-center rounded-[var(--r-el-sm)]"
+                className="ctl group/mark relative grid size-7 place-items-center rounded-[var(--r-el-sm)]"
               >
                 <span className="bg-brand grid size-6 place-items-center rounded-[var(--r-el-sm)] transition-opacity duration-[var(--dur-micro)] group-focus-visible/mark:opacity-0 group-hover/mark:opacity-0">
                   <span className="block size-2 rounded-full bg-white" />
@@ -87,7 +87,7 @@ export function AppSidebar({
                   aria-label="Colapsar el menú"
                   aria-expanded
                   aria-controls="app-sidebar"
-                  className="text-ink-mut hover:bg-line-2 hover:text-ink-2 ml-auto grid size-7 flex-none place-items-center rounded-[var(--r-el-sm)] transition-colors duration-[var(--dur-micro)]"
+                  className="ctl text-ink-mut hover:bg-line-2 hover:text-ink-2 ml-auto grid size-7 flex-none place-items-center rounded-[var(--r-el-sm)]"
                 >
                   <PanelLeftClose className="size-[17px]" strokeWidth={2} />
                 </button>

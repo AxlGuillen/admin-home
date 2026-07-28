@@ -17,7 +17,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
       aria-label="Cambiar el tema"
       title={compact ? "Cambiar el tema" : undefined}
       className={cn(
-        "border-line bg-surface text-ink-2 hover:bg-line-2 flex items-center rounded-[var(--r-el)] border text-[12px] font-semibold transition-colors duration-[var(--dur-micro)]",
+        "ctl border-line bg-surface text-ink-2 hover:bg-line-2 flex items-center rounded-[var(--r-el)] border text-[12px] font-semibold",
         compact ? "h-9 w-full justify-center" : "w-full gap-2.5 px-3 py-2",
       )}
     >

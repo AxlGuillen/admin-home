@@ -284,6 +284,36 @@ Ninguna dominante repite la cifra de otra pantalla: Inicio da la posición neta,
 Finanzas la deuda, Análisis el gasto. Si dos pantallas mostraran el mismo hero,
 una de las dos sobra.
 
+### Retícula del área de contenido
+
+El `<main>` lleva una retícula de puntos de 1px cada 22px. Es **papel de
+ingeniería**: el sustrato sobre el que se apoyan los instrumentos. Va como
+`background` del propio contenedor con scroll —no como pseudo-elemento— para
+que se quede quieta mientras el contenido se desplaza; si se moviera con la
+página dejaría de leerse como sustrato.
+
+Se dibuja con `radial-gradient`, no con un asset: tesela perfecto, pesa cero,
+es nítida a cualquier densidad y cambia de color con el tema. Un `.avif` no hace
+ninguna de las cuatro. Opacidad 7% en claro, 5.5% en oscuro — por debajo del
+grano, que sigue siendo la textura dominante del lienzo.
+
+### Hover de control
+
+El gesto es la **regleta**, el mismo elemento firma de la dominante. Al pasar el
+mouse el control se levanta 1px y enciende su filo interior; el botón primario
+además saca una regleta de ticks por el borde inferior. Con el `active` que baja
+1px, se siente como un switch de panel que se asienta.
+
+Se estiliza desde `globals.css` contra `[data-slot="button"]` y
+`[data-variant]`, que shadcn ya emite, para no editar a mano
+`components/ui/button.tsx`, que genera el CLI. Lo que no es `<Button>` —enlaces
+del nav, toggle de tema, botón de colapso— lleva la clase `.ctl`.
+
+La regleta solo aparece en el primario y solo donde hay ancho para leerla: en un
+botón de icono cuadrado sería un adorno, no una escala. `focus-visible` recibe
+el mismo trato que el hover, y `prefers-reduced-motion` quita el desplazamiento
+pero conserva el filo.
+
 ### Bisel del pie de sidebar
 
 La card oscura del pie lleva el **dial de ticks** (`/textures/dial.avif`) como

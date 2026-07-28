@@ -26,7 +26,7 @@ export default async function AppLayout({
         defaultCollapsed={collapsed}
       />
 
-      <main className="h-svh min-w-0 flex-1 overflow-auto">
+      <main className="dot-grid h-svh min-w-0 flex-1 overflow-auto">
         <div className="mx-auto max-w-[1080px] px-8 pt-8 pb-16">{children}</div>
       </main>
     </div>

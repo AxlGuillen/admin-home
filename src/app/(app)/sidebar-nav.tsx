@@ -54,7 +54,7 @@ export function SidebarNav({ collapsed }: { collapsed: boolean }) {
                 // esto el riel es una columna de enlaces sin nombre.
                 aria-label={collapsed ? mod.label : undefined}
                 className={cn(
-                  "flex items-center rounded-[var(--r-el-sm)] text-[13px] transition-colors duration-[var(--dur-micro)]",
+                  "ctl flex items-center rounded-[var(--r-el-sm)] text-[13px]",
                   collapsed ? "h-10 justify-center" : "gap-3 px-3 py-2.5",
                   active
                     ? "bg-brand font-bold text-white"

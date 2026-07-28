@@ -157,7 +157,7 @@ Playwright + `design-critic` sobre las 4 pantallas, en ambos temas.
 
 ---
 
-## Fase D · Textura de puntos en el área de contenido
+## Fase D · Textura de puntos en el área de contenido ✅
 
 > Asumido: "la parte que carga los módulos" = el `<main>` donde se renderizan las
 > páginas, no la sección "Módulos" del sidebar.
@@ -178,7 +178,17 @@ pared a pared.
 
 ---
 
-## Fase E · Hover característico
+**Resuelto el conflicto de texturas** bajando los puntos a 7% (claro) / 5.5%
+(oscuro), por debajo del grano, en vez de quitarle el grano al `<main>`. Los dos
+operan a escalas distintas —ruido fino contra retícula de 22px— y a esa
+opacidad no compiten.
+
+**Detalle de implementación que importa**: va como `background` del contenedor
+con scroll, no como pseudo-elemento absoluto. Un `::before` con `inset: 0`
+dentro de un contenedor con `overflow: auto` mide el alto del *viewport*, no el
+del contenido, así que se despega al hacer scroll.
+
+## Fase E · Hover característico ✅
 
 ### Dónde se implementa
 
