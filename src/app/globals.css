@@ -170,6 +170,11 @@
   --brand-050: var(--skin-brand-050);
   --brand-100: var(--skin-brand-100);
   --brand-fg: #ffffff;
+  /* Marca como RELLENO con texto blanco encima. Es un peldaño más oscuro que
+     `--brand` porque el blanco sobre la marca plena da 3.03:1, y el texto de un
+     botón es texto normal: necesita 4.5. `--brand` se queda para lo que no
+     lleva texto encima — arco del gauge, series, foco, filetes, tinta. */
+  --brand-fill: var(--brand-700);
   --ok: #128a4a;
   --ok-050: #e2f5ea;
   --danger: var(--skin-danger);
@@ -195,10 +200,15 @@
   --d-debito: #7e9660;
   --d-suscrip: #9a7aa0;
 
-  /* ── SKIN · personas (nunca marca ni estado) ── */
-  --p-1: #c2703d;
-  --p-2: #a85a8e;
-  --p-3: #2e7d6b;
+  /* ── SKIN · personas (nunca marca ni estado) ──
+     Colocadas en los tres huecos más grandes del círculo: ≥29° de cualquier
+     color de estado o de matiz de dato. Las tres llevan la inicial en blanco
+     encima, así que la restricción real no es el hue sino el contraste: las
+     tres dan 5.0:1. Iguales en los dos temas — el color de una persona es su
+     identidad, no un estado de la interfaz. */
+  --p-1: #7d5cc4;
+  --p-2: #ab4e8c;
+  --p-3: #3e7d3a;
 
   /* ── SKIN · danger legible sobre superficie oscura (4.9:1) ── */
   --danger-on-dark: #ff6b5e;
@@ -281,7 +291,7 @@
   --card-foreground: var(--ink);
   --popover: var(--surface);
   --popover-foreground: var(--ink);
-  --primary: var(--brand);
+  --primary: var(--brand-fill);
   --primary-foreground: var(--brand-fg);
   --secondary: var(--line-2);
   --secondary-foreground: var(--ink-2);
@@ -301,7 +311,7 @@
   --radius: 12px;
   --sidebar: var(--skin-sidebar);
   --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--brand);
+  --sidebar-primary: var(--brand-fill);
   --sidebar-primary-foreground: var(--brand-fg);
   --sidebar-accent: var(--brand-050);
   --sidebar-accent-foreground: var(--brand-700);
@@ -350,9 +360,6 @@
   --d-credito: #8e9ee0;
   --d-debito: #9ab377;
   --d-suscrip: #b795bd;
-  --p-1: #d98a56;
-  --p-2: #c473a8;
-  --p-3: #45a186;
 
   /* ── 1 · la card oscura deja de ser "lo más oscuro" ──
      Su fuerza era ser el máximo contraste contra una página clara. Aquí el
@@ -432,9 +439,11 @@
   --fill-strong-fg: var(--ink);
 
   /* ── bridge de shadcn que no se deriva solo ──
-     El acento es un lavado de marca oscuro, así que su tinta debe ser clara. */
-  --accent-foreground: #7fd3ef;
-  --sidebar-accent-foreground: #7fd3ef;
+     El acento es un lavado de marca oscuro, así que su tinta debe ser clara.
+     Se usa el peldaño que ya existe en la rampa y no un valor suelto: da
+     9.7:1 sobre `--brand-050` oscuro, de sobra. */
+  --accent-foreground: var(--brand-100);
+  --sidebar-accent-foreground: var(--brand-100);
 }
 
 @layer base {

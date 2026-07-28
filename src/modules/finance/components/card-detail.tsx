@@ -465,7 +465,7 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
                 className={cn(
                   "border-line -ml-px border px-3 py-1.5 text-[11px] font-bold first:rounded-l-[var(--r-el-sm)] last:rounded-r-[var(--r-el-sm)]",
                   m === selected
-                    ? "bg-brand border-brand relative z-10 text-white"
+                    ? "relative z-10 border-[var(--brand-fill)] bg-[var(--brand-fill)] text-white"
                     : "text-ink-2 hover:bg-line-2",
                 )}
               >

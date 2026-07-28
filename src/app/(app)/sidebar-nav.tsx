@@ -57,7 +57,7 @@ export function SidebarNav({ collapsed }: { collapsed: boolean }) {
                   "ctl flex items-center rounded-[var(--r-el-sm)] text-[13px]",
                   collapsed ? "h-10 justify-center" : "gap-3 px-3 py-2.5",
                   active
-                    ? "bg-brand font-bold text-white"
+                    ? "bg-[var(--brand-fill)] font-bold text-white"
                     : "text-ink-2 hover:bg-line-2 font-semibold",
                 )}
               >
