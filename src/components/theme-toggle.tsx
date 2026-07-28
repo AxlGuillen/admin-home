@@ -2,23 +2,34 @@
 
 import { Moon, Sun } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 function toggle() {
   const next = !document.documentElement.classList.contains("dark");
   document.documentElement.classList.toggle("dark", next);
   localStorage.setItem("theme", next ? "dark" : "light");
 }
 
-export function ThemeToggle() {
+export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   return (
     <button
       type="button"
       onClick={toggle}
-      className="border-line bg-surface text-ink-2 hover:bg-line-2 flex w-full items-center gap-2.5 rounded-[var(--r-el)] border px-3 py-2 text-[12px] font-semibold transition-colors duration-[var(--dur-micro)]"
+      aria-label="Cambiar el tema"
+      title={compact ? "Cambiar el tema" : undefined}
+      className={cn(
+        "border-line bg-surface text-ink-2 hover:bg-line-2 flex items-center rounded-[var(--r-el)] border text-[12px] font-semibold transition-colors duration-[var(--dur-micro)]",
+        compact ? "h-9 w-full justify-center" : "w-full gap-2.5 px-3 py-2",
+      )}
     >
-      <Moon className="size-4 dark:hidden" strokeWidth={2} />
-      <Sun className="hidden size-4 dark:block" strokeWidth={2} />
-      <span className="dark:hidden">Tema oscuro</span>
-      <span className="hidden dark:block">Tema claro</span>
+      <Moon className="size-4 flex-none dark:hidden" strokeWidth={2} />
+      <Sun className="hidden size-4 flex-none dark:block" strokeWidth={2} />
+      {!compact && (
+        <>
+          <span className="dark:hidden">Tema oscuro</span>
+          <span className="hidden dark:block">Tema claro</span>
+        </>
+      )}
     </button>
   );
 }

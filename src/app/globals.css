@@ -214,6 +214,8 @@
 
   /* ── DESIGN · layout / densidad / movimiento ── */
   --sidebar-w: 260px;
+  /* Riel: cabe el icono de 17px con área de toque de 44px y nada más. */
+  --sidebar-w-rail: 68px;
   --row-h: 46px;
   --row-h-sm: 37px;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
