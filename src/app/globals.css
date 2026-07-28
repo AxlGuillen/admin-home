@@ -115,6 +115,15 @@
   /* Brillo especular de la card de marca (esquina superior derecha). */
   --brand-specular: rgb(255 255 255 / 0.28);
 
+  /* Halo de la cifra clave sobre la card oscura. Va aquí y no inline porque el
+     rojo cambia entre temas y el halo tiene que cambiar con él. */
+  --danger-glow: rgb(217 45 32 / 0.55);
+  --brand-glow: rgb(10 159 212 / 0.6);
+
+  /* Relleno invertido de un control seleccionado (ver el bloque .dark). */
+  --fill-strong: var(--ink);
+  --fill-strong-fg: var(--surface);
+
   /* Tipo 4 · lavado de marca de la card de tendencia. */
   --trend-a: #f2fafd;
   --trend-b: #e4f2f8;
@@ -308,7 +317,9 @@
   --skin-ink: #eaf2f6;
   --skin-ink-2: #c7d9e2;
   --skin-ink-3: #a2b8c3;
-  --skin-muted: #8ba1ac;
+  /* Sube por encima del claro: las etiquetas de 9-11px caen también sobre los
+     escalones y la card de tendencia, que son más claros que la superficie. */
+  --skin-muted: #9ab0ba;
   --skin-muted-2: #5f747e;
   --surface: #14222c;
 
@@ -337,9 +348,13 @@
   /* ── 1 · la card oscura deja de ser "lo más oscuro" ──
      Su fuerza era ser el máximo contraste contra una página clara. Aquí el
      máximo contraste es hacia arriba: panel levantado, más claro que el lienzo
-     y con filo propio. */
-  --skin-dark-a: #354a54;
-  --skin-dark-b: #22343d;
+     y con filo propio.
+     Pero tiene techo: por encima de L* ~21 el rojo de estado deja de pasar
+     4.5:1 sobre ella, y el SKIN exige que esa cifra se lea a 12px. Así que sube
+     lo justo, y el resto de su identidad lo cargan el rayado y el filo, que
+     ningún otro material tiene. */
+  --skin-dark-a: #24343c;
+  --skin-dark-b: #16242e;
   --skin-dark-fg: #e4eef4;
   --sh-dark: 0 2px 6px rgb(0 0 0 / 0.5), 0 16px 36px rgb(0 0 0 / 0.45),
     inset 0 1px 0 rgb(255 255 255 / 0.16);
@@ -374,7 +389,7 @@
   --sh-base: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 20px rgb(0 0 0 / 0.28),
     inset 0 1px 0 var(--edge-top);
   --sh-raise: 0 2px 4px rgb(0 0 0 / 0.4), 0 14px 34px rgb(0 0 0 / 0.42),
-    0 32px 64px rgb(0 0 0 / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.1);
+    0 32px 64px rgb(0 0 0 / 0.3), inset 0 1px 0 var(--edge-top);
 
   /* ── 5 · las texturas: `multiply` sobre oscuro solo apaga ──
      El asset es blanco sobre negro; aquí se usa tal cual con `screen`. */
@@ -383,18 +398,27 @@
   --tex-grain-opacity: 0.07;
   --tex-brand-opacity: 0.2;
   --skin-glow: rgb(10 159 212 / 0.1);
+  --danger-glow: rgb(255 107 94 / 0.5);
 
   /* Tipo 4 · el lavado de tendencia, en versión nocturna. */
   --trend-a: #17414f;
   --trend-b: #0f2c39;
   --trend-line: #2a5c6e;
 
-  /* Tipo 5 · los escalones suben de porcentaje. Restar luz al blanco se nota
-     mucho más que sumársela al negro: con 8/14/20 la secuencia se aplana y deja
-     de leerse como escalera. Mismo salto percibido, distinta receta. */
-  --step-1: color-mix(in srgb, var(--brand) 14%, var(--surface));
-  --step-2: color-mix(in srgb, var(--brand) 24%, var(--surface));
-  --step-3: color-mix(in srgb, var(--brand) 34%, var(--surface));
+  /* El rayado es "ausencia": tiene que hundirse respecto a la card. Sobre
+     oscuro `--line-2` y `--line` quedan por ENCIMA de la superficie y el vacío
+     acabaría brillando más que el dato, así que baja a nivel de lienzo. */
+  --hatch: repeating-linear-gradient(
+    45deg,
+    var(--canvas-b) 0 3px,
+    var(--canvas-a) 3px 6px
+  );
+
+  /* Relleno invertido de un control seleccionado. En claro es `--ink`; en
+     oscuro `--ink` es casi blanco y ese relleno le ganaría en energía visual a
+     la card dominante, que es justo lo que el motor prohíbe. */
+  --fill-strong: #3d565f;
+  --fill-strong-fg: var(--ink);
 
   /* ── bridge de shadcn que no se deriva solo ──
      El acento es un lavado de marca oscuro, así que su tinta debe ser clara. */
@@ -584,7 +608,10 @@
   opacity: 0.16;
 }
 
-/* ── Elemento firma · regleta de ticks (SKIN) ── */
+/* ── Elemento firma · regleta de ticks (SKIN) ──
+   Dos capas ancladas abajo: marcas menores de 6px cada 6px y una mayor de 10px
+   cada 30px, o sea la quinta más alta. Es una sola clase; hubo un `.ticks-5`
+   idéntico byte a byte cuyo comentario prometía una diferencia inexistente. */
 .ticks {
   height: 10px;
   background:
@@ -595,19 +622,6 @@
   -webkit-mask-image: linear-gradient(90deg, #000 58%, transparent);
   mask-image: linear-gradient(90deg, #000 58%, transparent);
 }
-/* Regleta con la quinta marca más alta: dos capas ancladas abajo, no un
-   gradiente uniforme (la prosa del SKIN lo pide, su snippet no lo hacía). */
-.ticks-5 {
-  height: 10px;
-  background:
-    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 30px)
-      bottom / 100% 10px no-repeat,
-    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 6px)
-      bottom / 100% 6px no-repeat;
-  -webkit-mask-image: linear-gradient(90deg, #000 58%, transparent);
-  mask-image: linear-gradient(90deg, #000 58%, transparent);
-}
-
 /* ── Estado inactivo / vacío ── */
 .hatch-empty {
   background-image: var(--hatch);

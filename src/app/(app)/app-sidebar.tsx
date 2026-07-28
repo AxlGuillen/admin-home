@@ -123,7 +123,7 @@ export function AppSidebar({
           {!collapsed && (
             <div className="min-w-0 flex-1">
               <p className="text-dark-fg nm text-[12px] font-semibold">{email}</p>
-              <span className="text-dark-fg/55 font-mono text-[9px] tracking-[0.04em] uppercase">
+              <span className="text-dark-fg/70 font-mono text-[9px] tracking-[0.04em] uppercase">
                 Sesión activa
               </span>
             </div>

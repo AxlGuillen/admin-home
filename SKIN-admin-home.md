@@ -303,17 +303,22 @@ azul del tema claro: `--skin-canvas-a: #0a1319`, superficie de card `#14222c`.
 El sidebar (`#0c161d`) queda entre los dos, así que sigue leyéndose como un
 plano aparte sin necesidad de borde fuerte.
 
-**La card de fugas se levanta.** En claro es lo más oscuro de la pantalla; aquí
-es un panel de metal levantado (`#354a54 → #22343d`) con filo interior al 16%.
-El `--hatch-dark` sigue puesto y sigue significando lo mismo: dinero que se
-escapa. Lo que cambia es la dirección del contraste, no el mensaje.
+**La card de fugas se levanta, pero con techo.** En claro es lo más oscuro de la
+pantalla; aquí es un panel levantado (`#24343c → #16242e`) con filo interior al
+16%. **No puede subir más**: por encima de L\* ≈21 el rojo de estado deja de
+pasar 4.5:1 sobre ella, y este skin exige que esa cifra se lea a 12px. El
+`--hatch-dark` sigue puesto y sigue significando lo mismo —dinero que se
+escapa—, y aquí carga más peso que en claro: junto con el filo es lo que
+distingue el material cuando la luminancia ya no puede.
 
 **El rojo cambia de tono, no de papel.** `--danger-on-dark` (`#ff6b5e`), que ya
 existía para la card oscura, pasa a ser el rojo de estado de toda la interfaz.
 El `#d92d20` del tema claro no pasa contraste sobre grafito.
 
-**Los escalones suben de 8/14/20% a 14/24/34%.** Mismo salto percibido, distinta
-receta — ver §9 del motor.
+**Los escalones se quedan en 8/14/20%.** Sobre `--surface` oscuro dan ΔL\*
+4.3/3.2/3.1, ya por encima del 3.4/2.5/2.6 del tema claro. Hubo un intento de
+subirlos a 14/24/34 por verlos planos en una captura reducida; era un artefacto
+de la imagen, no del valor.
 
 **La rampa de acero se invierte**: `--cat-1` pasa a ser el más claro. La regla
 del skin sigue siendo "mayor monto = más contraste", que sobre oscuro es más
