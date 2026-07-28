@@ -315,6 +315,49 @@ construidos con las mismas piezas de este motor:
 
 ---
 
+## 9 · Motor de tema oscuro
+
+El tema oscuro **no es el claro invertido**. La mayoría de los tokens sí son un
+flip mecánico —tintas, líneas, superficies, lienzo—, pero cinco piezas del motor
+dejan de cumplir su función y cambian de **estrategia**, no de valor. Si se
+invierten sin más, el sistema sigue siendo legible y deja de tener identidad.
+
+### Lo que cambia de estrategia
+
+| Pieza | Por qué se rompe | Qué se hace |
+| --- | --- | --- |
+| **Tipo 3 · card oscura** | Su fuerza era ser el máximo contraste contra una página clara. Sobre lienzo oscuro se desvanece y pierde el papel de gravedad. | Se invierte la dirección del contraste: pasa a ser un panel **más claro** que el lienzo, con filo superior propio. Sigue siendo el material más separado de la pantalla. |
+| **Tipo 2 · card de marca** | Un acento saturado con texto blanco vibra sobre fondo oscuro. | Baja la luminancia del gradiente y se atenúa el especular. |
+| **Rampa categórica** | Si está ordenada "mayor valor = más oscuro", sobre lienzo oscuro la categoría más grande queda invisible. | Se **invierte la dirección** de la rampa. La regla real no es "más oscuro", es "más contraste contra el fondo". |
+| **Elevación** | Una sombra tintada no existe sobre negro. | La elevación se comunica con el **filo interior superior** y con una superficie más clara; la sombra solo acompaña. |
+| **Texturas** | `multiply` sobre un fondo oscuro solo apaga. Un asset invertido para papel blanco no sirve. | Se cambia el `blend-mode` a `screen` y se quita el `filter`. El asset es el mismo. |
+
+### Lo que casi nadie recuerda
+
+- **Los escalones tonales necesitan otra receta.** Restarle luz al blanco se
+  percibe mucho más que sumársela al negro. Con los mismos porcentajes la
+  secuencia se aplana y deja de leerse como escalera: hay que subirlos hasta
+  igualar el **salto percibido**, no el porcentaje.
+- **El rojo de estado del tema claro no pasa contraste sobre oscuro.** El rojo
+  que el skin ya definió para la card oscura pasa a ser el primario.
+- **El lavado de marca más claro es una superficie, no una tinta.** Si un token
+  de la rampa se usa como fondo, se invierte; si se usa como tinta sobre una
+  superficie que sigue siendo oscura, **no**. Hay que revisar el uso real, no el
+  nombre del token.
+- **Las utilidades `dark:` no se activan solas.** En Tailwind v4 `dark:`
+  significa `prefers-color-scheme`; para que obedezcan a una clase hay que
+  declarar `@custom-variant dark (&:where(.dark, .dark *))`.
+
+### Requisito de tokenización
+
+Todo esto solo es posible si el tema claro no tiene valores crudos dentro de las
+reglas. Antes de escribir el bloque oscuro, deben ser variables: el color de la
+sombra y el filo, el sustrato contra el que mezclan los escalones, los colores
+de la card de tendencia, el especular, y **el `blend-mode`, el `filter` y la
+opacidad de cada textura**.
+
+---
+
 ## Prohibiciones globales
 
 - ❌ Cards uniformes del mismo tamaño/material (grid de N iguales).

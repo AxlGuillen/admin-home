@@ -24,7 +24,9 @@ const chipTone: Record<ChipTone, string> = {
   neutral: "bg-line-2 text-ink-2",
   ok: "bg-[var(--ok-050)] text-ok",
   danger: "bg-[var(--danger-050)] text-danger",
-  dark: "bg-ink text-white",
+  // `text-surface`, no `text-white`: en tema oscuro la tinta se aclara y el
+  // blanco quedaría sobre claro.
+  dark: "bg-ink text-surface",
   onBrand: "bg-white/20 text-white",
 };
 

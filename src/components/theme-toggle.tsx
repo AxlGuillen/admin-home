@@ -1,20 +1,19 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
 import { cn } from "@/lib/utils";
 
-function toggle() {
-  const next = !document.documentElement.classList.contains("dark");
-  document.documentElement.classList.toggle("dark", next);
-  localStorage.setItem("theme", next ? "dark" : "light");
-}
-
 export function ThemeToggle({ compact = false }: { compact?: boolean }) {
+  // `resolvedTheme` es undefined antes de montar, pero solo se lee dentro del
+  // handler: así el botón no necesita estado y no hay mismatch de hidratación.
+  const { resolvedTheme, setTheme } = useTheme();
+
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       aria-label="Cambiar el tema"
       title={compact ? "Cambiar el tema" : undefined}
       className={cn(

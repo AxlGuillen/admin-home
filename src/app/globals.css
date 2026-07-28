@@ -2,6 +2,11 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* En Tailwind v4 `dark:` significa `prefers-color-scheme` por defecto, así que
+   sin esto las utilidades `dark:` obedecen al sistema operativo y no a la clase
+   que pone el toggle. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ══════════════════════════════════════════════════════════════════
    Admin Home — "tablero de instrumentos de precisión"
    Hereda de DESIGN.md v1.0 · tokens de SKIN-admin-home.md
@@ -284,6 +289,117 @@
   --sidebar-accent-foreground: var(--brand-700);
   --sidebar-border: var(--skin-sidebar-border);
   --sidebar-ring: var(--brand);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   Tema oscuro
+   No es el claro invertido. Cinco piezas de la identidad dejan de
+   funcionar y cambian de ESTRATEGIA, no de valor. Van numeradas abajo
+   y documentadas en DESIGN.md §9.
+   ══════════════════════════════════════════════════════════════════ */
+.dark {
+  /* ── neutros: grafito frío; el lienzo es lo más oscuro de la pantalla ── */
+  --skin-canvas-a: #0a1319;
+  --skin-canvas-b: #0e1a22;
+  --skin-sidebar: #0c161d;
+  --skin-sidebar-border: #1f2f39;
+  --skin-line: #263a45;
+  --skin-line-2: #1b2a33;
+  --skin-ink: #eaf2f6;
+  --skin-ink-2: #c7d9e2;
+  --skin-ink-3: #a2b8c3;
+  --skin-muted: #8ba1ac;
+  --skin-muted-2: #5f747e;
+  --surface: #14222c;
+
+  /* ── estado: el rojo del tema claro no pasa contraste sobre oscuro, así que
+     el que ya existía para la card oscura pasa a ser el primario ── */
+  --danger: var(--danger-on-dark);
+  --danger-050: #3a1c19;
+  --ok: #3ec27f;
+  --ok-050: #12301f;
+  --warn: #e0a44a;
+  --warn-050: #33240f;
+
+  /* El lavado de marca más claro es una SUPERFICIE: se invierte. `--brand-100`
+     no, porque solo se usa como tinta sobre la card oscura. */
+  --brand-050: #0d2a36;
+
+  /* Matices de dato y personas: los del tema claro son medios tonos que sobre
+     lienzo oscuro se apagan. Suben luminancia sin cambiar de hue. */
+  --d-credito: #8e9ee0;
+  --d-debito: #9ab377;
+  --d-suscrip: #b795bd;
+  --p-1: #d98a56;
+  --p-2: #c473a8;
+  --p-3: #45a186;
+
+  /* ── 1 · la card oscura deja de ser "lo más oscuro" ──
+     Su fuerza era ser el máximo contraste contra una página clara. Aquí el
+     máximo contraste es hacia arriba: panel levantado, más claro que el lienzo
+     y con filo propio. */
+  --skin-dark-a: #354a54;
+  --skin-dark-b: #22343d;
+  --skin-dark-fg: #e4eef4;
+  --sh-dark: 0 2px 6px rgb(0 0 0 / 0.5), 0 16px 36px rgb(0 0 0 / 0.45),
+    inset 0 1px 0 rgb(255 255 255 / 0.16);
+
+  /* ── 2 · la card de marca baja luminancia: el cian saturado vibra ── */
+  --skin-grad-brand: linear-gradient(
+    150deg,
+    #0c8fbe 0%,
+    #0a7ba4 46%,
+    #06556f 100%
+  );
+  --brand-specular: rgb(255 255 255 / 0.14);
+  --sh-brand: 0 2px 6px rgb(0 0 0 / 0.5), 0 18px 40px rgb(6 54 74 / 0.55),
+    inset 0 1px 0 rgb(255 255 255 / 0.16);
+
+  /* ── 3 · la rampa de categorías invierte su dirección ──
+     La regla sigue siendo "mayor monto = más contraste contra el fondo"; sobre
+     oscuro eso significa más CLARO. Sin invertir, la rebanada más grande sería
+     la menos visible. */
+  --cat-1: #d3e2e9;
+  --cat-2: #b0c6d0;
+  --cat-3: #8fa9b3;
+  --cat-4: #6f8a95;
+  --cat-5: #55707b;
+  --cat-6: #3d545f;
+
+  /* ── 4 · la elevación se comunica con el filo, no con la sombra ──
+     Una sombra azul sobre lienzo oscuro no existe. El negro aporta poco; lo que
+     levanta la card es el filo interior superior. */
+  --sh-rgb: 0 0 0;
+  --edge-top: rgb(255 255 255 / 0.09);
+  --sh-base: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 20px rgb(0 0 0 / 0.28),
+    inset 0 1px 0 var(--edge-top);
+  --sh-raise: 0 2px 4px rgb(0 0 0 / 0.4), 0 14px 34px rgb(0 0 0 / 0.42),
+    0 32px 64px rgb(0 0 0 / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.1);
+
+  /* ── 5 · las texturas: `multiply` sobre oscuro solo apaga ──
+     El asset es blanco sobre negro; aquí se usa tal cual con `screen`. */
+  --tex-grain-filter: none;
+  --tex-grain-blend: screen;
+  --tex-grain-opacity: 0.07;
+  --tex-brand-opacity: 0.2;
+  --skin-glow: rgb(10 159 212 / 0.1);
+
+  /* Tipo 4 · el lavado de tendencia, en versión nocturna. */
+  --trend-a: #17414f;
+  --trend-b: #0f2c39;
+  --trend-line: #2a5c6e;
+
+  /* Tipo 5 · los escalones suben de porcentaje. Restar luz al blanco se nota
+     mucho más que sumársela al negro: con 8/14/20 la secuencia se aplana y deja
+     de leerse como escalera. Mismo salto percibido, distinta receta. */
+  --step-1: color-mix(in srgb, var(--brand) 14%, var(--surface));
+  --step-2: color-mix(in srgb, var(--brand) 24%, var(--surface));
+  --step-3: color-mix(in srgb, var(--brand) 34%, var(--surface));
+
+  /* ── bridge de shadcn que no se deriva solo ──
+     El acento es un lavado de marca oscuro, así que su tinta debe ser clara. */
+  --accent-foreground: #7fd3ef;
+  --sidebar-accent-foreground: #7fd3ef;
 }
 
 @layer base {

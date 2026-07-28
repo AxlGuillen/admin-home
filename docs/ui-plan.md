@@ -94,7 +94,16 @@ oscuro `--ink` se aclara, así que eso queda blanco sobre claro.
 
 ---
 
-## Fase C · Motor de tema oscuro
+## Fase C · Motor de tema oscuro ✅
+
+Documentado en `DESIGN.md` §9 (lo portable) y en el SKIN (lo del proyecto).
+
+**Lo que no se anticipó y salió al comparar los dos temas lado a lado:** con los
+mismos porcentajes, los **escalones tonales se aplanan**. Restarle luz al blanco
+se percibe mucho más que sumársela al negro, así que la secuencia 8/14/20 deja
+de leerse como escalera. Suben a 14/24/34 para igualar el salto percibido. Por
+la misma razón hubo que empujar más lejos la card oscura y el lavado de
+tendencia: en oscuro las diferencias chicas de luminancia no se ven.
 
 ### C1 · Mecanismo
 

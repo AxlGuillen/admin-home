@@ -290,3 +290,41 @@ La card oscura del pie lleva el **dial de ticks** (`/textures/dial.avif`) como
 bisel detrás del avatar: cierra el sidebar con el mismo lenguaje de instrumento
 que abre la dominante. Va en `screen` a opacidad baja — es un bisel, no un
 gráfico.
+
+---
+
+## Tema oscuro
+
+Sigue el motor de `DESIGN.md` §9. Aquí quedan solo las decisiones que son de
+este skin, no del motor.
+
+**El lienzo es lo más oscuro de la pantalla.** Grafito frío con el mismo sesgo
+azul del tema claro: `--skin-canvas-a: #0a1319`, superficie de card `#14222c`.
+El sidebar (`#0c161d`) queda entre los dos, así que sigue leyéndose como un
+plano aparte sin necesidad de borde fuerte.
+
+**La card de fugas se levanta.** En claro es lo más oscuro de la pantalla; aquí
+es un panel de metal levantado (`#354a54 → #22343d`) con filo interior al 16%.
+El `--hatch-dark` sigue puesto y sigue significando lo mismo: dinero que se
+escapa. Lo que cambia es la dirección del contraste, no el mensaje.
+
+**El rojo cambia de tono, no de papel.** `--danger-on-dark` (`#ff6b5e`), que ya
+existía para la card oscura, pasa a ser el rojo de estado de toda la interfaz.
+El `#d92d20` del tema claro no pasa contraste sobre grafito.
+
+**Los escalones suben de 8/14/20% a 14/24/34%.** Mismo salto percibido, distinta
+receta — ver §9 del motor.
+
+**La rampa de acero se invierte**: `--cat-1` pasa a ser el más claro. La regla
+del skin sigue siendo "mayor monto = más contraste", que sobre oscuro es más
+claro.
+
+**Los matices de dato y de persona suben luminancia sin cambiar de hue.** Los
+del tema claro son medios tonos pensados para leerse sobre blanco; sobre
+grafito se apagan.
+
+### Mecanismo
+
+`next-themes` con `attribute="class"` y `defaultTheme="system"`. El
+`@custom-variant dark` está declarado en `globals.css`: sin él las utilidades
+`dark:` obedecerían al sistema operativo y no al toggle.
