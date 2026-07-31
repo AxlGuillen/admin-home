@@ -34,19 +34,33 @@ function claims(token: string): Record<string, unknown> {
   }
 }
 
+// Un 401 sin motivo es el fallo silencioso que este servidor promete no tener.
+// Se registra en qué puerta se cayó, nunca el token. Solo va a los logs de Vercel.
+function reject(reason: string, detail?: Record<string, unknown>): null {
+  console.warn("[mcp] token rechazado:", reason, detail ?? "");
+  return null;
+}
+
 async function identify(token: string): Promise<CachedIdentity | null> {
   const { data, error } = await verifierClient().auth.getUser(token);
-  if (error || !data.user) return null;
+  if (error || !data.user) {
+    return reject("getUser falló", { error: error?.message });
+  }
 
   const payload = claims(token);
   const clientId = typeof payload.client_id === "string" ? payload.client_id : "";
 
   // Un token de sesión normal de la app web no trae `client_id`: no pasó por el
   // consentimiento, así que no abre el conector.
-  if (!clientId) return null;
+  if (!clientId) return reject("el token no trae client_id");
 
   const allowed = allowedClientIds();
-  if (allowed.length && !allowed.includes(clientId)) return null;
+  if (allowed.length && !allowed.includes(clientId)) {
+    return reject("client_id fuera del allowlist", {
+      tokenClientId: clientId,
+      allowlist: allowed,
+    });
+  }
 
   // Tener sesión no es tener acceso: auth.users es compartido con las apps ra_ y
   // adala_. La lectura va por RLS con el propio token de quien llama.
@@ -56,7 +70,9 @@ async function identify(token: string): Promise<CachedIdentity | null> {
     .eq("user_id", data.user.id);
 
   if (membershipError) throw new Error(membershipError.message);
-  if (!rows?.length) return null;
+  if (!rows?.length) {
+    return reject("el usuario no pertenece a ningún hogar", { user: data.user.email });
+  }
 
   const householdIds = rows.map((r) => r.household_id).sort();
 
