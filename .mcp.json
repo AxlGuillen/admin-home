@@ -1,13 +1,8 @@
 {
   "mcpServers": {
     "admin-home": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "tsx",
-        "mcp/server.ts"
-      ],
-      "env": {}
+      "type": "http",
+      "url": "http://localhost:3000/api/mcp"
     },
     "playwright": {
       "type": "stdio",

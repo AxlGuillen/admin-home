@@ -1,6 +1,11 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import "server-only";
 
+import { createMcpHandler, withMcpAuth } from "mcp-handler";
+
+import { appUrl } from "@/shared/config/server-env";
+
+import { verifyToken } from "./auth";
+import { PROTECTED_RESOURCE_PATH } from "./index";
 import { registerTools } from "./tools";
 
 // Lo que un LLM no puede deducir de los nombres de las herramientas y que, si lo
@@ -24,11 +29,25 @@ Antes de afirmar algo sobre un periodo, revisa list_cards: la cobertura dice qu�
 meses hay cargados de cada tarjeta. Si el mes que te preguntan no está, dilo en vez
 de responder con lo que sí hay.`;
 
-const server = new McpServer(
-  { name: "admin-home", version: "0.1.0" },
+// Duplicado a mano en el `maxDuration` de la route: Next analiza los config de
+// segmento estáticamente y una constante importada lo rompe. Si cambia uno, el otro.
+const MAX_DURATION = 60;
+
+const handler = createMcpHandler(
+  (server) => registerTools(server),
   { instructions: INSTRUCTIONS },
+  // Solo Streamable HTTP: el camino SSE de mcp-handler exige REDIS_URL y sin él
+  // truena. `basePath` deriva /api/mcp a partir de app/api/[transport].
+  { basePath: "/api", maxDuration: MAX_DURATION },
 );
 
-registerTools(server);
-
-await server.connect(new StdioServerTransport());
+export const mcpHandler = withMcpAuth(handler, verifyToken, {
+  required: true,
+  resourceMetadataPath: PROTECTED_RESOURCE_PATH,
+  // El ORIGEN, no la URI del recurso: withMcpAuth concatena
+  // `${resourceUrl}${resourceMetadataPath}`, y con la URI canónica saldría
+  // /api/mcp/.well-known/..., que no existe.
+  resourceUrl: appUrl(),
+  // Sin `requiredScopes`: los access tokens de Supabase no traen claim `scope`,
+  // así que exigir cualquiera daría 403 en todas las requests.
+});

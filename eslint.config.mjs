@@ -27,7 +27,6 @@ const eslintConfig = defineConfig([
         // carpeta; `fileInternalPath` distingue index.ts del resto de sus archivos.
         { type: "module", pattern: "src/modules/*", capture: ["moduleName"] },
         { type: "app", pattern: "src/app" },
-        { type: "mcp", pattern: "mcp" },
         { type: "shared", pattern: "src/shared" },
         { type: "ui", pattern: "src/components" },
         { type: "hooks", pattern: "src/hooks" },
@@ -62,18 +61,6 @@ const eslintConfig = defineConfig([
                     types: {
                       anyOf: ["module", "shared", "ui", "hooks", "lib"],
                     },
-                  },
-                },
-              },
-            },
-            // El servidor MCP corre fuera de Next: consume módulos igual que `app`,
-            // pero solo por entry points que no importen `server-only`.
-            {
-              from: { element: { type: "mcp" } },
-              allow: {
-                to: {
-                  element: {
-                    types: { anyOf: ["mcp", "module", "shared", "lib"] },
                   },
                 },
               },

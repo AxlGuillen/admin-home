@@ -33,6 +33,7 @@ jobs:
       - name: Build
         run: npm run build
         # Placeholder values, not secrets: the build only needs env.ts to validate, it never queries Supabase.
+        # APP_URL is deliberately absent: this build is what proves it stays optional.
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder

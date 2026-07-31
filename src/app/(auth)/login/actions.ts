@@ -10,7 +10,15 @@ import { createClient } from "@/shared/supabase/server";
 const credentialsSchema = z.object({
   email: z.email("Correo inválido"),
   password: z.string().min(8, "Mínimo 8 caracteres"),
-  next: z.string().startsWith("/").optional(),
+  // `next` viene del navegador. `//evil.com` y `/\evil.com` empiezan con "/" pero
+  // son redirects fuera del sitio, y este campo ahora carga el flujo de OAuth.
+  next: z
+    .string()
+    .refine(
+      (v) => v.startsWith("/") && !v.startsWith("//") && !v.startsWith("/\\"),
+      "Ruta interna inválida",
+    )
+    .optional(),
 });
 
 export async function signIn(formData: FormData): Promise<ActionResult<never>> {

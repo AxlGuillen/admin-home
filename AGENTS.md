@@ -29,6 +29,7 @@ src/
   modules/                 Un directorio por dominio. AQUÍ vive la lógica.
     _template/             Plantilla para crear un módulo nuevo. No se importa.
     finance/               Módulo 1: tarjetas y pagos.
+    mcp/                   Servidor MCP remoto de solo lectura, con OAuth de Supabase.
   shared/                  Infra transversal. No conoce ningún módulo.
     supabase/              Clientes de Supabase + tipos generados de la BD.
     auth/                  Helpers de sesión.
@@ -36,7 +37,6 @@ src/
   components/ui/           shadcn/ui. Generado por CLI — no editar a mano.
   hooks/                   Hooks genéricos de UI.
   lib/                     Utilidades puras sin dependencias.
-mcp/                     Servidor MCP de solo lectura. Proceso Node, fuera de Next.
 supabase/migrations/       Migraciones SQL versionadas.
 proxy.ts                   Refresco de sesión (era `middleware.ts` antes de Next 16).
 docs/architecture.md       Por qué está armado así.
@@ -65,7 +65,6 @@ app  →  modules (vía index.ts) · shared · components/ui · hooks · lib
 module →  shared · components/ui · hooks · lib · otro módulo SOLO vía su index.ts
 shared →  shared · lib
 lib    →  lib          (funciones puras, cero imports del proyecto)
-mcp    →  modules (vía entry point) · shared · lib
 ```
 
 Nunca importes `@/modules/finance/queries` desde fuera de `finance`. Usa uno de los
@@ -84,9 +83,11 @@ Las Server Actions sí van en `index.ts`: `"use server"` hace que Next las reemp
 un stub RPC en el cliente, así que no arrastran nada.
 
 Un módulo puede exponer un tercer entry point **sin runtime** (hoy solo
-`finance/analytics-core`) para lo que necesita un proceso Node plano, como el servidor
-MCP: ni `server-only` ni `requireHousehold()`, y el cliente de Supabase se recibe en vez
-de crearse. Agrégalo a la lista de `fileInternalPath` en `eslint.config.mjs` al crearlo.
+`finance/analytics-core`) para el código que no puede depender de Next: ni `server-only`
+ni `requireHousehold()`, y el cliente de Supabase **se recibe en vez de crearse**. Eso es
+lo que deja al módulo `mcp` construir su cliente con el token del request y que RLS
+aplique igual que en la app. Agrégalo a la lista de `fileInternalPath` en
+`eslint.config.mjs` al crearlo.
 
 ## Reglas no negociables
 
@@ -149,8 +150,9 @@ y `lucide-react` para el resto. Se ven igual porque el set animado *es* Lucide.
 | `npm test`            | Vitest en modo watch.                                        |
 | `npm run test:run`    | Vitest una sola pasada (usa este en CI o al verificar).      |
 | `npm run db:types`    | Regenera `src/shared/supabase/database.types.ts` desde la BD. |
-| `npm run mcp:login`   | Guarda la sesión del MCP en `~/.admin-home/session.json`.    |
-| `npm run mcp`         | Corre el servidor MCP a mano (el cliente lo lanza solo).     |
+
+El MCP ya no tiene comando propio: vive en `/api/mcp` dentro de la app, así que
+`npm run dev` lo levanta con todo lo demás.
 
 ## Base de datos
 

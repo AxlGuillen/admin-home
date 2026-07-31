@@ -5,7 +5,7 @@
 import { monthOf } from "@/modules/finance/analytics-core";
 import type { CardMovement } from "@/modules/finance/analytics-core";
 
-import type { Client } from "./client";
+import type { McpClient } from "./supabase";
 
 export type CardKind = "credito" | "debito";
 
@@ -62,7 +62,7 @@ async function fetchAll<T>(
   return rows;
 }
 
-export async function loadLedger(client: Client): Promise<Ledger> {
+export async function loadLedger(client: McpClient): Promise<Ledger> {
   const [cardRows, peopleRows, creditStatements, accountStatements] =
     await Promise.all([
       fetchAll("las tarjetas", (from, to) =>
@@ -180,11 +180,52 @@ export async function loadLedger(client: Client): Promise<Ledger> {
 // Una pregunta del LLM suele encadenar varias herramientas seguidas; recargar
 // ~2,000 filas en cada una haría la conversación lentísima sin ganar frescura.
 const TTL_MS = 60_000;
-let cache: { at: number; ledger: Ledger } | null = null;
+const MAX_ENTRIES = 4;
 
-export async function getLedger(client: Client): Promise<Ledger> {
-  if (cache && Date.now() - cache.at < TTL_MS) return cache.ledger;
-  const ledger = await loadLedger(client);
-  cache = { at: Date.now(), ledger };
-  return ledger;
+// Indexada por hogar, nunca global: una instancia de Node se reutiliza entre
+// requests de usuarios distintos, y RLS protege el fetch, no la memoria. Sin la
+// clave, el segundo usuario en caer en la instancia recibe el ledger del primero.
+const cache = new Map<string, { at: number; ledger: Promise<Ledger> }>();
+
+/**
+ * Separada de `getLedger` para poder probar el aislamiento sin una BD detrás:
+ * la clave es la propiedad de seguridad, así que tiene que tener test.
+ *
+ * `householdKey` es el conjunto ordenado de hogares del usuario, no uno solo:
+ * `home_private.user_household_ids()` devuelve un `setof`, así que RLS entrega la
+ * unión, y cachear esa unión bajo un id suelto se la serviría a quien solo
+ * pertenece a ese.
+ */
+export function cachedByHousehold(
+  householdKey: string,
+  load: () => Promise<Ledger>,
+): Promise<Ledger> {
+  const hit = cache.get(householdKey);
+  if (hit && Date.now() - hit.at < TTL_MS) return hit.ledger;
+
+  // Se guarda la promesa, no el valor: el LLM dispara herramientas en paralelo y
+  // así varias llamadas concurrentes colapsan en una sola carga.
+  const loading = load();
+  cache.set(householdKey, { at: Date.now(), ledger: loading });
+  loading.catch(() => {
+    if (cache.get(householdKey)?.ledger === loading) cache.delete(householdKey);
+  });
+
+  for (const key of cache.keys()) {
+    if (cache.size <= MAX_ENTRIES) break;
+    cache.delete(key);
+  }
+  return loading;
+}
+
+/** Solo para los tests: la caché vive en el módulo y se filtraría entre casos. */
+export function resetLedgerCache(): void {
+  cache.clear();
+}
+
+export function getLedger(
+  client: McpClient,
+  householdKey: string,
+): Promise<Ledger> {
+  return cachedByHousehold(householdKey, () => loadLedger(client));
 }

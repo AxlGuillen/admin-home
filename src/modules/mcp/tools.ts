@@ -1,3 +1,4 @@
+import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
@@ -11,41 +12,26 @@ import {
   merchantKey,
 } from "@/modules/finance/analytics-core";
 
-import { openSession, type Session } from "./client";
+import { contextFrom, type McpContext } from "./context";
 import { filterMovements, movementFilterShape, resolveCard } from "./filters";
-import { getLedger, type Ledger } from "./ledger";
 import { byCategory, byMonth, pesos, toRow, totals } from "./summarize";
-
-// El access token dura una hora; renovar cada 45 minutos evita que una consulta
-// falle a media conversación sin depender del timer interno de supabase-js.
-const SESSION_TTL_MS = 45 * 60_000;
-let memo: { at: number; session: Promise<Session> } | null = null;
-
-function session(): Promise<Session> {
-  if (memo && Date.now() - memo.at < SESSION_TTL_MS) return memo.session;
-  const opened = openSession();
-  memo = { at: Date.now(), session: opened };
-  opened.catch(() => {
-    memo = null;
-  });
-  return opened;
-}
 
 type ToolResult = {
   content: { type: "text"; text: string }[];
   isError?: boolean;
 };
 
-function handler<A>(
-  run: (args: A, ctx: Session, ledger: Ledger) => unknown | Promise<unknown>,
-) {
-  return async (args: A): Promise<ToolResult> => {
+/** The SDK hands the validated AuthInfo to every tool call; that is the request context. */
+type ToolExtra = { authInfo?: AuthInfo };
+
+function handler<A>(run: (args: A, ctx: McpContext) => unknown | Promise<unknown>) {
+  return async (args: A, extra: ToolExtra): Promise<ToolResult> => {
     try {
-      const ctx = await session();
-      const ledger = await getLedger(ctx.client);
-      const value = await run(args, ctx, ledger);
+      const value = await run(args, contextFrom(extra.authInfo));
       return { content: [{ type: "text", text: JSON.stringify(value) }] };
     } catch (error) {
+      // The LLM only sees the message; the stack goes to the Vercel logs.
+      console.error("[mcp] tool failed", error);
       return {
         isError: true,
         content: [
@@ -71,7 +57,8 @@ export function registerTools(server: McpServer): void {
       },
       annotations: readOnly,
     },
-    handler<{ includeArchived: boolean }>((args, _ctx, ledger) => {
+    handler<{ includeArchived: boolean }>(async (args, ctx) => {
+      const ledger = await ctx.ledger();
       const cards = ledger.cards.filter((c) => args.includeArchived || !c.archived);
 
       return {
@@ -172,8 +159,8 @@ export function registerTools(server: McpServer): void {
       },
       annotations: readOnly,
     },
-    handler<{ card: string }>(async (args, ctx, ledger) => {
-      const target = resolveCard(ledger.cards, args.card);
+    handler<{ card: string }>(async (args, ctx) => {
+      const target = resolveCard((await ctx.ledger()).cards, args.card);
       const rows = await fetchCardDetailRows(ctx.client, target.id);
       if (!rows) throw new Error(`No se pudo leer la tarjeta ${target.name}.`);
       const detail = computeCardDetail(rows);
@@ -247,8 +234,8 @@ export function registerTools(server: McpServer): void {
       inputSchema: searchShape,
       annotations: readOnly,
     },
-    handler<SearchArgs>((args, _ctx, ledger) => {
-      const found = filterMovements(ledger.movements, args);
+    handler<SearchArgs>(async (args, ctx) => {
+      const found = filterMovements((await ctx.ledger()).movements, args);
       const sorted = [...found].sort((a, b) =>
         args.sort === "amount"
           ? b.amountCents - a.amountCents
@@ -274,8 +261,8 @@ export function registerTools(server: McpServer): void {
       annotations: readOnly,
     },
     handler<z.infer<z.ZodObject<typeof movementFilterShape>>>(
-      (args, _ctx, ledger) => {
-        const found = filterMovements(ledger.movements, args);
+      async (args, ctx) => {
+        const found = filterMovements((await ctx.ledger()).movements, args);
         return { ...totals(found), categories: byCategory(found) };
       },
     ),
@@ -290,8 +277,8 @@ export function registerTools(server: McpServer): void {
       annotations: readOnly,
     },
     handler<z.infer<z.ZodObject<typeof movementFilterShape>>>(
-      (args, _ctx, ledger) => {
-        const found = filterMovements(ledger.movements, args);
+      async (args, ctx) => {
+        const found = filterMovements((await ctx.ledger()).movements, args);
         const months = byMonth(found).map((m) => {
           const top = byCategory(found.filter((x) => x.month === m.month))[0];
           return {
@@ -332,8 +319,8 @@ export function registerTools(server: McpServer): void {
       inputSchema: recurringShape,
       annotations: readOnly,
     },
-    handler<RecurringArgs>((args, _ctx, ledger) => {
-      const found = filterMovements(ledger.movements, args);
+    handler<RecurringArgs>(async (args, ctx) => {
+      const found = filterMovements((await ctx.ledger()).movements, args);
       const seen = new Map<string, { last: string | null; cards: Set<string> }>();
       for (const m of found) {
         const key = merchantKey(m.description);
@@ -380,8 +367,8 @@ export function registerTools(server: McpServer): void {
       inputSchema: duplicatesShape,
       annotations: readOnly,
     },
-    handler<DuplicatesArgs>((args, _ctx, ledger) => {
-      const found = filterMovements(ledger.movements, args);
+    handler<DuplicatesArgs>(async (args, ctx) => {
+      const found = filterMovements((await ctx.ledger()).movements, args);
       const cardsFor = new Map<string, Set<string>>();
       for (const m of found) {
         const key = `${merchantKey(m.description)}|${m.amountCents}`;
