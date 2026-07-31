@@ -361,7 +361,7 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
                     <span className="nm text-dark-fg/90 flex-1">
                       {d.description}
                     </span>
-                    <span className="text-dark-fg/55 tnum flex-none text-[10px] font-normal">
+                    <span className="text-dark-fg/70 tnum flex-none text-[10px] font-normal">
                       {d.dates.map((x) => x.slice(5)).join(" · ")}
                     </span>
                     <span className="tnum text-danger-on-dark flex-none">
@@ -445,7 +445,7 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
                     className={cn(
                       "border-line -ml-px border px-2.5 py-1 text-[10px] font-bold first:rounded-l-[var(--r-el-sm)] last:rounded-r-[var(--r-el-sm)]",
                       sortBy === o.key
-                        ? "bg-ink relative z-10 border-[var(--ink)] text-white"
+                        ? "relative z-10 border-[var(--fill-strong)] bg-[var(--fill-strong)] text-[var(--fill-strong-fg)]"
                         : "text-ink-2 hover:bg-line-2",
                     )}
                   >
@@ -465,7 +465,7 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
                 className={cn(
                   "border-line -ml-px border px-3 py-1.5 text-[11px] font-bold first:rounded-l-[var(--r-el-sm)] last:rounded-r-[var(--r-el-sm)]",
                   m === selected
-                    ? "bg-brand border-brand relative z-10 text-white"
+                    ? "relative z-10 border-[var(--brand-fill)] bg-[var(--brand-fill)] text-white"
                     : "text-ink-2 hover:bg-line-2",
                 )}
               >

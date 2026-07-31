@@ -315,6 +315,76 @@ construidos con las mismas piezas de este motor:
 
 ---
 
+## 9 · Motor de tema oscuro
+
+El tema oscuro **no es el claro invertido**. La mayoría de los tokens sí son un
+flip mecánico —tintas, líneas, superficies, lienzo—, pero cinco piezas del motor
+dejan de cumplir su función y cambian de **estrategia**, no de valor. Si se
+invierten sin más, el sistema sigue siendo legible y deja de tener identidad.
+
+### Lo que cambia de estrategia
+
+| Pieza | Por qué se rompe | Qué se hace |
+| --- | --- | --- |
+| **Tipo 3 · card oscura** | Su fuerza era ser el máximo contraste contra una página clara. Sobre lienzo oscuro se desvanece y pierde el papel de gravedad. | Se invierte la dirección del contraste: pasa a ser un panel **más claro** que el lienzo, con filo superior propio. Sigue siendo el material más separado de la pantalla. |
+| **Tipo 2 · card de marca** | Un acento saturado con texto blanco vibra sobre fondo oscuro. | Baja la luminancia del gradiente y se atenúa el especular. |
+| **Rampa categórica** | Si está ordenada "mayor valor = más oscuro", sobre lienzo oscuro la categoría más grande queda invisible. | Se **invierte la dirección** de la rampa. La regla real no es "más oscuro", es "más contraste contra el fondo". |
+| **Rayado de ausencia** | Los tokens de línea, más oscuros que la superficie en claro, quedan más claros que ella en oscuro: el vacío brilla más que el dato. | Las bandas bajan a nivel de lienzo para que el rayado siga **hundiéndose**. |
+| **Elevación** | Una sombra tintada no existe sobre negro. | La elevación se comunica con el **filo interior superior** y con una superficie más clara; la sombra solo acompaña. |
+| **Texturas** | `multiply` sobre un fondo oscuro solo apaga. Un asset invertido para papel blanco no sirve. | Se cambia el `blend-mode` a `screen` y se quita el `filter`. El asset es el mismo. |
+
+### El techo que nadie ve venir
+
+En tema claro los materiales tienen **todo el rango** para separarse: el lienzo
+está arriba del todo y la card oscura puede irse hasta abajo. En oscuro ese
+margen no existe — el lienzo ya está en el piso y todos los materiales se
+apiñan en una banda estrecha. Consecuencias:
+
+- **La card oscura no puede subir cuanto quiera.** Su cifra clave suele ser roja,
+  y un rojo de estado deja de pasar 4.5:1 en cuanto el panel se aclara. Sube lo
+  justo y el resto de su identidad lo cargan el **rayado y el filo**, que ningún
+  otro material tiene. Si se elige entre legibilidad y jerarquía, gana la
+  legibilidad: una cifra ilegible es un fallo funcional, una jerarquía floja es
+  estético.
+- **Fija un ΔL\* mínimo entre materiales antes de elegir valores.** Sin ese
+  número es facilísimo que dos materiales aterricen en la misma luminancia y
+  nadie lo note hasta medirlo.
+
+### Lo que casi nadie recuerda
+
+- **Los escalones tonales NO necesitan otra receta.** Es tentador subirles el
+  porcentaje porque "sobre negro se aplanan", pero es falso: a igual porcentaje,
+  mezclar marca sobre una superficie oscura da un ΔL\* **mayor** que sobre
+  blanco. Si en pantalla se ven planos, sospecha de la captura antes que del
+  valor — una imagen reducida aplasta las diferencias oscuro-sobre-oscuro.
+  **Mide, no mires.**
+- **El rayado también cambia de estrategia.** Es el lenguaje de la ausencia, así
+  que tiene que **hundirse** respecto a la card. Los tokens de línea, que en
+  claro son más oscuros que la superficie, en oscuro son más claros: usados tal
+  cual, el vacío acaba brillando más que el dato.
+- **Un token de tinta no es un token de relleno.** El más oscuro del tema claro
+  se vuelve el más claro del oscuro: como texto está bien, como fondo se
+  convierte en el área más brillante de la pantalla y le gana a la dominante.
+- **El rojo de estado del tema claro no pasa contraste sobre oscuro.** El rojo
+  que el skin ya definió para la card oscura pasa a ser el primario.
+- **El lavado de marca más claro es una superficie, no una tinta.** Si un token
+  de la rampa se usa como fondo, se invierte; si se usa como tinta sobre una
+  superficie que sigue siendo oscura, **no**. Hay que revisar el uso real, no el
+  nombre del token.
+- **Las utilidades `dark:` no se activan solas.** En Tailwind v4 `dark:`
+  significa `prefers-color-scheme`; para que obedezcan a una clase hay que
+  declarar `@custom-variant dark (&:where(.dark, .dark *))`.
+
+### Requisito de tokenización
+
+Todo esto solo es posible si el tema claro no tiene valores crudos dentro de las
+reglas. Antes de escribir el bloque oscuro, deben ser variables: el color de la
+sombra y el filo, el sustrato contra el que mezclan los escalones, los colores
+de la card de tendencia, el especular, y **el `blend-mode`, el `filter` y la
+opacidad de cada textura**.
+
+---
+
 ## Prohibiciones globales
 
 - ❌ Cards uniformes del mismo tamaño/material (grid de N iguales).

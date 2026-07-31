@@ -24,7 +24,9 @@ const chipTone: Record<ChipTone, string> = {
   neutral: "bg-line-2 text-ink-2",
   ok: "bg-[var(--ok-050)] text-ok",
   danger: "bg-[var(--danger-050)] text-danger",
-  dark: "bg-ink text-white",
+  // Relleno invertido por token: `--ink` como fondo se vuelve casi blanco en
+  // tema oscuro y le ganaría en energía visual a la card dominante.
+  dark: "bg-[var(--fill-strong)] text-[var(--fill-strong-fg)]",
   onBrand: "bg-white/20 text-white",
 };
 
@@ -265,7 +267,7 @@ export function Dominant({
         <div className="tnum text-[33px] leading-none font-extrabold tracking-[-0.02em] text-white [text-shadow:0_0_18px_rgb(255_255_255/0.45)]">
           {value}
         </div>
-        <span className="ticks-5 mt-2.5 block text-white/30" />
+        <span className="ticks mt-2.5 block text-white/30" />
         {hint && <p className="mt-2 text-[12px] text-white/80">{hint}</p>}
       </div>
       {footer && (
@@ -301,8 +303,8 @@ export function Dark({
           className={cn(
             "tnum mt-2 text-[31px] leading-none font-extrabold tracking-[-0.03em]",
             keyTone === "danger"
-              ? "text-danger-on-dark [text-shadow:0_0_16px_rgb(217_45_32/0.55)]"
-              : "text-[var(--brand-100)] [text-shadow:0_0_16px_rgb(10_159_212/0.6)]",
+              ? "text-danger-on-dark [text-shadow:0_0_16px_var(--danger-glow)]"
+              : "text-[var(--brand-100)] [text-shadow:0_0_16px_var(--brand-glow)]",
           )}
         >
           {keyValue}

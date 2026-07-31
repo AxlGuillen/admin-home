@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Archivo, JetBrains_Mono } from "next/font/google";
 
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -29,13 +30,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    // next-themes escribe la clase del tema en <html> antes de hidratar.
     <html
       lang="es"
+      suppressHydrationWarning
       className={`${archivo.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster richColors />
+        <ThemeProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

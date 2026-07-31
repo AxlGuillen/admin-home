@@ -284,9 +284,122 @@ Ninguna dominante repite la cifra de otra pantalla: Inicio da la posición neta,
 Finanzas la deuda, Análisis el gasto. Si dos pantallas mostraran el mismo hero,
 una de las dos sobra.
 
+### Marca plena vs. marca de relleno
+
+`--brand` (`#0A9FD4`) es el acento: arco del gauge, series, foco, filetes,
+tinta. **No lleva texto blanco encima**: el blanco sobre él da 3.03:1, y el
+texto de un botón es texto normal, que necesita 4.5.
+
+Para eso está `--brand-fill`, que es `--brand-700` (`#076F96`, blanco a 5.64:1).
+Lo usan el botón primario, la píldora activa del nav y el selector de mes. La
+cifra hero de la dominante sí puede ir en blanco sobre el gradiente pleno
+porque a 33px es texto grande y le basta 3:1.
+
+### Por qué las personas viven donde viven
+
+Con marca, cuatro estados y tres matices de dato, el círculo de hue tiene diez
+familias: la regla de ~40° del motor es aritméticamente imposible (10 × 40 >
+360). Lo que sí se puede es **maximizar el mínimo**, y ahí es donde caen las
+tres personas — en los tres huecos más grandes:
+
+| | hue | vecino más cercano |
+| --- | --- | --- |
+| `--p-3` `#3E7D3A` | 116° | 30° de `--d-debito`, 32° de `--ok` |
+| `--p-1` `#7D5CC4` | 259° | 30° de `--d-credito`, 31° de `--d-suscrip` |
+| `--p-2` `#AB4E8C` | 320° | 29° de `--d-suscrip`, 44° de `--danger` |
+
+Mínimo del círculo completo: **29°**. Antes era 13° (`--p-1` naranja pegado a
+`--warn`) y 18° (`--p-3` verde pegado a `--ok`).
+
+La restricción que de verdad manda, sin embargo, no es el hue: la persona se
+dibuja como punto relleno con su inicial **en blanco a 8px**, así que el color
+tiene que aguantar texto blanco. Las tres dan 5.0:1. La paleta que había antes
+en `lib/colors.ts` —el arcoíris por defecto de Tailwind— no llegaba a 4.5 en
+ninguno de sus ocho colores, y dos de ellos eran prácticamente la marca y el
+rojo de estado.
+
+Son **tres a propósito**. Con más de tres miembros del hogar, dos comparten
+color; se resuelve poniéndoselo a mano en `home_people.color`.
+
+Iguales en los dos temas: el color de una persona es su identidad, no un estado
+de la interfaz.
+
+### Retícula del área de contenido
+
+El `<main>` lleva una retícula de puntos de 1px cada 22px. Es **papel de
+ingeniería**: el sustrato sobre el que se apoyan los instrumentos. Va como
+`background` del propio contenedor con scroll —no como pseudo-elemento— para
+que se quede quieta mientras el contenido se desplaza; si se moviera con la
+página dejaría de leerse como sustrato.
+
+Se dibuja con `radial-gradient`, no con un asset: tesela perfecto, pesa cero,
+es nítida a cualquier densidad y cambia de color con el tema. Un `.avif` no hace
+ninguna de las cuatro. Opacidad 7% en claro, 5.5% en oscuro — por debajo del
+grano, que sigue siendo la textura dominante del lienzo.
+
+### Hover de control
+
+El gesto es la **regleta**, el mismo elemento firma de la dominante. Al pasar el
+mouse el control se levanta 1px y enciende su filo interior; el botón primario
+además saca una regleta de ticks por el borde inferior. Con el `active` que baja
+1px, se siente como un switch de panel que se asienta.
+
+Se estiliza desde `globals.css` contra `[data-slot="button"]` y
+`[data-variant]`, que shadcn ya emite, para no editar a mano
+`components/ui/button.tsx`, que genera el CLI. Lo que no es `<Button>` —enlaces
+del nav, toggle de tema, botón de colapso— lleva la clase `.ctl`.
+
+La regleta solo aparece en el primario y solo donde hay ancho para leerla: en un
+botón de icono cuadrado sería un adorno, no una escala. `focus-visible` recibe
+el mismo trato que el hover, y `prefers-reduced-motion` quita el desplazamiento
+pero conserva el filo.
+
 ### Bisel del pie de sidebar
 
 La card oscura del pie lleva el **dial de ticks** (`/textures/dial.avif`) como
 bisel detrás del avatar: cierra el sidebar con el mismo lenguaje de instrumento
 que abre la dominante. Va en `screen` a opacidad baja — es un bisel, no un
 gráfico.
+
+---
+
+## Tema oscuro
+
+Sigue el motor de `DESIGN.md` §9. Aquí quedan solo las decisiones que son de
+este skin, no del motor.
+
+**El lienzo es lo más oscuro de la pantalla.** Grafito frío con el mismo sesgo
+azul del tema claro: `--skin-canvas-a: #0a1319`, superficie de card `#14222c`.
+El sidebar (`#0c161d`) queda entre los dos, así que sigue leyéndose como un
+plano aparte sin necesidad de borde fuerte.
+
+**La card de fugas se levanta, pero con techo.** En claro es lo más oscuro de la
+pantalla; aquí es un panel levantado (`#24343c → #16242e`) con filo interior al
+16%. **No puede subir más**: por encima de L\* ≈21 el rojo de estado deja de
+pasar 4.5:1 sobre ella, y este skin exige que esa cifra se lea a 12px. El
+`--hatch-dark` sigue puesto y sigue significando lo mismo —dinero que se
+escapa—, y aquí carga más peso que en claro: junto con el filo es lo que
+distingue el material cuando la luminancia ya no puede.
+
+**El rojo cambia de tono, no de papel.** `--danger-on-dark` (`#ff6b5e`), que ya
+existía para la card oscura, pasa a ser el rojo de estado de toda la interfaz.
+El `#d92d20` del tema claro no pasa contraste sobre grafito.
+
+**Los escalones se quedan en 8/14/20%.** Sobre `--surface` oscuro dan ΔL\*
+4.3/3.2/3.1, ya por encima del 3.4/2.5/2.6 del tema claro. Hubo un intento de
+subirlos a 14/24/34 por verlos planos en una captura reducida; era un artefacto
+de la imagen, no del valor.
+
+**La rampa de acero se invierte**: `--cat-1` pasa a ser el más claro. La regla
+del skin sigue siendo "mayor monto = más contraste", que sobre oscuro es más
+claro.
+
+**Los matices de dato y de persona suben luminancia sin cambiar de hue.** Los
+del tema claro son medios tonos pensados para leerse sobre blanco; sobre
+grafito se apagan.
+
+### Mecanismo
+
+`next-themes` con `attribute="class"` y `defaultTheme="system"`. El
+`@custom-variant dark` está declarado en `globals.css`: sin él las utilidades
+`dark:` obedecerían al sistema operativo y no al toggle.
