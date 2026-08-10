@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
+    "icons": "node scripts/generate-icons.mjs",
     "db:types": "supabase gen types typescript --project-id impscwgourdxhdejwkhe --schema public > src/shared/supabase/database.types.ts",
     "check": "npm run typecheck && npm run lint && npm run test:run"
   },

@@ -39,6 +39,7 @@ export const config = {
     // Skip static assets, the MCP transports and the OAuth discovery documents: those
     // authenticate in their own handler, and a redirect to /login would replace the 401
     // that clients need to discover the authorization server. /oauth/consent stays in.
-    "/((?!_next/static|_next/image|favicon.ico|\\.well-known|api/mcp|api/sse|api/message|api/health|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif)$).*)",
+    // manifest.webmanifest is fetched WITHOUT cookies: behind the proxy it 307'd to /login and install broke.
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|\\.well-known|api/mcp|api/sse|api/message|api/health|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)",
   ],
 };
