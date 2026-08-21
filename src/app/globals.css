@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* Base del popover del tour. Va aquí y no en el componente para garantizar el
+   orden de cascada: los overrides del final de este archivo deben ganarle. */
+@import "driver.js/dist/driver.css";
 
 /* En Tailwind v4 `dark:` significa `prefers-color-scheme` por defecto, así que
    sin esto las utilidades `dark:` obedecen al sistema operativo y no a la clase
@@ -741,4 +744,92 @@
 }
 .ah-view {
   animation: ah-in var(--dur-panel) var(--ease-in) both;
+}
+
+/* ── Popover del tour (driver.js) — retematizado al SKIN ──
+   Los defaults de driver.css son la card blanca genérica que el motor prohíbe.
+   Su base entra por el @import de arriba; estas reglas ganan por orden de
+   cascada y siguen el tema porque todo son tokens. */
+.driver-popover {
+  background-color: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card-sm);
+  box-shadow: var(--sh-raise);
+  font-family: var(--font-sans);
+  padding: 16px;
+  max-width: 300px;
+}
+/* Kicker, no título: el mismo patrón eyebrow de PageHeading. */
+.driver-popover-title {
+  font: 700 10px/1.4 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-mut);
+}
+.driver-popover-description {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.driver-popover-progress-text {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--ink-mut);
+}
+.driver-popover-footer {
+  margin-top: 12px;
+}
+.driver-popover-footer button {
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-el-sm);
+  background-color: var(--surface);
+  color: var(--ink-2);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  text-shadow: none;
+  transition:
+    background-color var(--dur-micro) var(--ease),
+    border-color var(--dur-micro) var(--ease),
+    color var(--dur-micro) var(--ease);
+}
+.driver-popover-footer button:hover {
+  background-color: var(--line-2);
+  color: var(--ink);
+}
+/* Siguiente/Listo es la acción primaria: marca de relleno, como todo botón
+   primario (SKIN: --brand-fill, nunca --brand pleno bajo texto blanco). */
+.driver-popover-footer .driver-popover-next-btn {
+  border-color: var(--brand-fill);
+  background-color: var(--brand-fill);
+  color: #fff;
+}
+.driver-popover-footer .driver-popover-next-btn:hover {
+  border-color: var(--brand-600);
+  background-color: var(--brand-600);
+  color: #fff;
+}
+.driver-popover-close-btn {
+  color: var(--ink-mut);
+}
+.driver-popover-close-btn:hover {
+  color: var(--ink);
+}
+/* La flecha es un triángulo de bordes: cada lado toma el color de la card. */
+.driver-popover-arrow-side-left.driver-popover-arrow {
+  border-left-color: var(--surface);
+}
+.driver-popover-arrow-side-right.driver-popover-arrow {
+  border-right-color: var(--surface);
+}
+.driver-popover-arrow-side-top.driver-popover-arrow {
+  border-top-color: var(--surface);
+}
+.driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-bottom-color: var(--surface);
 }
