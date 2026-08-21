@@ -136,6 +136,13 @@
      escalón más corto. */
   --sh-hover: 0 2px 10px rgb(var(--sh-rgb) / 0.16), inset 0 1px 0 var(--edge-top);
 
+  /* Tour: la penumbra lleva la marca (brand-900, no negro muerto) y el borde
+     del popover sale a token porque en oscuro necesita más que --line para
+     despegarse del overlay. driver los lee en JS desde el runner. */
+  --tour-overlay-color: #06364a;
+  --tour-overlay-opacity: 0.55;
+  --tour-popover-line: var(--line);
+
   /* Tipo 4 · lavado de marca de la card de tendencia. */
   --trend-a: #f2fafd;
   --trend-b: #e4f2f8;
@@ -357,6 +364,18 @@
   /* El lavado de marca más claro es una SUPERFICIE: se invierte. `--brand-100`
      no, porque solo se usa como tinta sobre la card oscura. */
   --brand-050: #0d2a36;
+
+  /* La rampa de marca también se parte por USO (§9: "un token de tinta no es
+     un token de relleno"). `--brand-700` es la TINTA del kicker: a #076f96
+     daba 2.88:1 sobre la superficie oscura. `--brand-fill` es el RELLENO del
+     botón: sube solo lo justo para separarse del fondo (3.4:1) sin perder el
+     blanco encima (4.77:1). */
+  --brand-700: #22aede;
+  --brand-fill: #0b7ba6;
+
+  --tour-overlay-color: #000000;
+  --tour-overlay-opacity: 0.65;
+  --tour-popover-line: #3d565f;
 
   /* Matices de dato y personas: los del tema claro son medios tonos que sobre
      lienzo oscuro se apagan. Suben luminancia sin cambiar de hue. */
@@ -749,41 +768,59 @@
 /* ── Popover del tour (driver.js) — retematizado al SKIN ──
    Los defaults de driver.css son la card blanca genérica que el motor prohíbe.
    Su base entra por el @import de arriba; estas reglas ganan por orden de
-   cascada y siguen el tema porque todo son tokens. */
+   cascada, salvo los estados :focus de driver (especificidad 0,2,0), que se
+   igualan explícitamente abajo. */
 .driver-popover {
   background-color: var(--surface);
   color: var(--ink);
-  border: 1px solid var(--line);
+  border: 1px solid var(--tour-popover-line);
   border-radius: var(--r-card-sm);
   box-shadow: var(--sh-raise);
   font-family: var(--font-sans);
   padding: 16px;
   max-width: 300px;
 }
-/* Kicker, no título: el mismo patrón eyebrow de PageHeading. */
+/* Título de card (DESIGN §1), no kicker: una frase en versalitas mono pierde
+   la forma de palabra. La regleta de abajo es el elemento firma del SKIN — la
+   etiqueta de calibración pegada al instrumento. */
 .driver-popover-title {
-  font: 700 10px/1.4 var(--font-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-mut);
+  padding-right: 22px;
+  font: 800 13px/1.2 var(--font-sans);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.driver-popover-title::after {
+  content: "";
+  display: block;
+  height: 6px;
+  margin-top: 7px;
+  background:
+    repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 24px)
+      bottom / 100% 6px no-repeat,
+    repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 6px)
+      bottom / 100% 4px no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent);
+  mask-image: linear-gradient(90deg, #000 55%, transparent);
 }
 .driver-popover-description {
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.5;
   color: var(--ink-2);
 }
+/* --ink-3, no --ink-mut: a 10px es texto y el mut da 4.08 sobre blanco. */
 .driver-popover-progress-text {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 10px;
-  color: var(--ink-mut);
+  color: var(--ink-3);
 }
 .driver-popover-footer {
   margin-top: 12px;
 }
 .driver-popover-footer button {
+  position: relative;
   padding: 5px 10px;
   border: 1px solid var(--line);
   border-radius: var(--r-el-sm);
@@ -792,32 +829,73 @@
   font-family: var(--font-sans);
   font-size: 12px;
   font-weight: 600;
-  text-shadow: none;
   transition:
+    translate var(--dur-micro) var(--ease),
+    box-shadow var(--dur-micro) var(--ease),
     background-color var(--dur-micro) var(--ease),
-    border-color var(--dur-micro) var(--ease),
     color var(--dur-micro) var(--ease);
 }
-.driver-popover-footer button:hover {
+/* El gesto del SKIN, no un cambio de color: levantar y encender el filo.
+   Cubre también el :focus de driver (#f7f7f7), que ganaba por especificidad. */
+.driver-popover-footer button:hover,
+.driver-popover-footer button:focus,
+.driver-popover-footer button:focus-visible {
+  translate: 0 -1px;
+  box-shadow: var(--sh-hover);
   background-color: var(--line-2);
   color: var(--ink);
 }
-/* Siguiente/Listo es la acción primaria: marca de relleno, como todo botón
-   primario (SKIN: --brand-fill, nunca --brand pleno bajo texto blanco). */
-.driver-popover-footer .driver-popover-next-btn {
+.driver-popover-footer button:active {
+  translate: 0 1px;
+  box-shadow: none;
+}
+/* Siguiente/Listo es la acción primaria: marca de relleno SIEMPRE (nunca
+   --brand pleno bajo texto blanco), también en hover y focus. */
+.driver-popover-footer .driver-popover-next-btn,
+.driver-popover-footer .driver-popover-next-btn:hover,
+.driver-popover-footer .driver-popover-next-btn:focus,
+.driver-popover-footer .driver-popover-next-btn:focus-visible {
   border-color: var(--brand-fill);
   background-color: var(--brand-fill);
   color: #fff;
 }
-.driver-popover-footer .driver-popover-next-btn:hover {
-  border-color: var(--brand-600);
-  background-color: var(--brand-600);
-  color: #fff;
+/* La regleta del primario en hover, igual que el botón de la app. */
+.driver-popover-footer .driver-popover-next-btn::after {
+  content: "";
+  position: absolute;
+  right: 7px;
+  bottom: 3px;
+  left: 7px;
+  height: 3px;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    currentColor 0 1px,
+    transparent 1px 5px
+  );
+  opacity: 0;
+  transition: opacity var(--dur-micro) var(--ease);
 }
+.driver-popover-footer .driver-popover-next-btn:hover::after,
+.driver-popover-footer .driver-popover-next-btn:focus-visible::after {
+  opacity: 0.5;
+}
+/* Geometría propia del ×: el default de driver (32×28 pegado a la esquina)
+   cae dentro de la curva del radio 16px. El :focus cubre el #2d2d2d de
+   driver.css, invisible sobre la superficie oscura. */
 .driver-popover-close-btn {
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-el-sm);
   color: var(--ink-mut);
+  font-size: 15px;
 }
-.driver-popover-close-btn:hover {
+.driver-popover-close-btn:hover,
+.driver-popover-close-btn:focus,
+.driver-popover-close-btn:focus-visible {
+  background-color: var(--line-2);
   color: var(--ink);
 }
 /* La flecha es un triángulo de bordes: cada lado toma el color de la card. */
@@ -832,4 +910,16 @@
 }
 .driver-popover-arrow-side-bottom.driver-popover-arrow {
   border-bottom-color: var(--surface);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .driver-popover-footer button {
+    transition: none;
+  }
+  .driver-popover-footer button:hover,
+  .driver-popover-footer button:focus,
+  .driver-popover-footer button:focus-visible,
+  .driver-popover-footer button:active {
+    translate: none;
+  }
 }

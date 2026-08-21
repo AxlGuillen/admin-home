@@ -42,24 +42,41 @@ export async function startTour({
 
   // Dinámico a propósito: el tour no paga bundle hasta que alguien lo abre.
   const { driver } = await import("driver.js");
-  active = true;
 
-  driver({
-    showProgress: present.length > 1,
-    progressText: "{{current}} de {{total}}",
-    nextBtnText: "Siguiente",
-    prevBtnText: "Atrás",
-    doneBtnText: "Listo",
-    animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    onDestroyed: () => {
-      active = false;
-      markTourSeen(screen, version);
-    },
-    steps: present.map((s) => ({
-      element: `[data-tour="${s.anchor}"]`,
-      popover: { title: s.title, description: s.body },
-    })),
-  }).drive();
+  // La penumbra y el borde viven como tokens para seguir el tema.
+  const css = getComputedStyle(document.documentElement);
+  const overlayColor = css.getPropertyValue("--tour-overlay-color").trim();
+  const overlayOpacity = Number(css.getPropertyValue("--tour-overlay-opacity"));
+
+  active = true;
+  try {
+    driver({
+      showProgress: present.length > 1,
+      progressText: "{{current}} de {{total}}",
+      nextBtnText: "Siguiente",
+      prevBtnText: "Atrás",
+      doneBtnText: "Listo",
+      animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      // El movimiento del motor (--dur-panel), no los 400ms de driver.
+      duration: 240,
+      // El recorte abraza el radio de card; a 5px deja cuñas en las esquinas.
+      stageRadius: 18,
+      ...(overlayColor ? { overlayColor } : {}),
+      ...(Number.isFinite(overlayOpacity) ? { overlayOpacity } : {}),
+      onDestroyed: () => {
+        active = false;
+        markTourSeen(screen, version);
+      },
+      steps: present.map((s) => ({
+        element: `[data-tour="${s.anchor}"]`,
+        popover: { title: s.title, description: s.body },
+      })),
+    }).drive();
+  } catch {
+    // Sin el reset, un drive() fallido deja el flag puesto y el botón de
+    // ayuda muere hasta recargar (pasó con un HMR a mitad de un tour).
+    active = false;
+  }
 }
 
 /** Arranca solo la primera vez que este dispositivo ve la pantalla. */

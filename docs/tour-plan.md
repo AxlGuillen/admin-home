@@ -120,20 +120,42 @@ Guion por pantalla:
 | Análisis | gasto del periodo → serie mensual → categorías → suscripciones → fugas |
 | Personas | qué son (etiquetas, no permisos) → colores → alta |
 
-### Fase 3 · Validación
+### Fase 3 · Validación ✅
 
-- `design-critic` sobre el popover en ambos temas contra DESIGN.md/SKIN.
-- Teclado: Esc cierra, ←/→ navegan; el foco no se queda atrapado.
-- Casos borde, decididos desde ya:
-  - **Pantalla sin datos** (usuario nuevo de verdad): antes de arrancar se
-    filtran los pasos cuyo selector no existe en el DOM — sin eso driver.js
-    muestra el paso flotando en el centro, descontextualizado.
-  - **Sidebar colapsado**: los pasos del sidebar apuntan al `<aside>` completo,
-    no a los labels que el riel oculta.
-  - **Gráficas**: se ancla al `Panel` contenedor, nunca a los SVG internos de
-    recharts, que se re-renderizan.
-  - **z-index**: driver.js usa un overlay alto; verificar que no pelee con los
-    tooltips (z-50) ni con los dialogs de radix.
+Verificado en navegador: teclado (Esc cierra, ←/→ navegan — driver escucha las
+flechas en **keyup**, no keydown), riel colapsado (los anclajes del sidebar
+existen en ambos estados y el recorte enmarca el riel limpio), reduced-motion
+(`driver-simple` en el body cuando aplica), y ambos temas.
+
+La auditoría numérica del `design-critic` (19 hallazgos) obligó a más que
+retoques:
+
+- **Focos heredados de driver.css** que ganaban por especificidad: el `×` en
+  foco quedaba `#2d2d2d` sobre superficie oscura (1.18:1, invisible) y Atrás en
+  foco `#f7f7f7` (1.36:1). driver enfoca el primer botón EN CADA PASO, así que
+  no era un estado raro: era el estado normal. Cubiertos con overrides
+  explícitos de `:focus`.
+- **`--brand-700` roto en todo el tema oscuro**, no solo en el popover: era
+  tinta del kicker y sustrato de `--brand-fill` a la vez, y `.dark` no lo
+  redefinía (2.88:1). Se partió por uso — ver el SKIN.
+- **El popover ahora lleva la firma**: título de card (13px/800, no kicker mono
+  — una frase en versalitas mono pierde la forma de palabra) con la **regleta
+  de ticks** debajo, y el primario saca su regleta en hover. Antes era "una
+  card blanca con un botón azul que podría ser de cualquier app" — palabras del
+  crítico.
+- Overlay tokenizado (`--tour-overlay-*`): penumbra de marca en claro, negro en
+  oscuro con separación por **borde** (`--tour-popover-line`).
+- `duration: 240` (el `--dur-panel` del motor, no los 400ms de driver),
+  `stageRadius: 18` (el recorte abraza el radio de card), progreso en
+  `--ink-3` (el mut daba 4.08 sobre blanco), `×` reposicionado fuera de la
+  curva del radio, y la cifra "80%" del guion en `.tnum`.
+- **Bug propio encontrado al validar**: un `drive()` fallido (HMR a mitad de
+  tour) dejaba el flag `active` puesto y el botón de ayuda moría hasta
+  recargar. `try/catch` con reset.
+
+Pendientes menores anotados, sin valor definido en DESIGN/SKIN: botón
+deshabilitado con `opacity` heredada (WCAG lo exime), la flecha del popover sin
+contorno, y 5 de 23 guiones sin remate de "para qué".
 
 ## Qué NO cubre
 

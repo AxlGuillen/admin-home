@@ -56,7 +56,8 @@ export const analysisTour: TourDefinition = {
     {
       anchor: "utilizacion",
       title: "Qué tan cargadas van",
-      body: "La deuda de cada tarjeta contra su límite. Arriba del 80% se enciende la alerta.",
+      // La cifra en tnum (política del SKIN); driver renderiza el body como HTML.
+      body: 'La deuda de cada tarjeta contra su límite. Arriba del <span class="tnum">80%</span> se enciende la alerta.',
     },
     {
       anchor: "fugas",
