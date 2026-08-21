@@ -127,6 +127,8 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
     <div className="space-y-4">
       {/* Fila hero: dominante (gasto total) + KPIs con gauge */}
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
+        {/* Wrapper `grid`: ancla del tour sin cambiar el stretch del item. */}
+        <div data-tour="gasto" className="grid">
         <Dominant
           label="Gasto total del periodo"
           value={pesosShort(totals.spendCents)}
@@ -159,6 +161,7 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
             </div>
           }
         />
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <Kpi
             label="Deuda actual"
@@ -198,6 +201,7 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
 
       {/* Gráficas */}
       <div className="grid gap-4 lg:grid-cols-2">
+        <div data-tour="categorias" className="grid">
         <Panel
           title="Gasto por categoría"
           subtitle="Consumo del hogar, todos los meses."
@@ -263,7 +267,9 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
             </div>
           </div>
         </Panel>
+        </div>
 
+        <div data-tour="serie" className="grid">
         <Panel
           title="Gasto por mes"
           subtitle="Cargos regulares del hogar."
@@ -331,10 +337,12 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
             </BarChart>
           </ChartContainer>
         </Panel>
+        </div>
       </div>
 
       {/* Utilización + fugas (oscura) */}
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <div data-tour="utilizacion" className="grid">
         <Panel
           title="Utilización por tarjeta"
           subtitle="Deuda actual vs. límite de crédito."
@@ -415,7 +423,9 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
             </span>
           </div>
         </Panel>
+        </div>
 
+        <div data-tour="fugas" className="grid">
         <Dark
           label="Fuga de capital"
           keyValue={pesosShort(totals.creditCostCents)}
@@ -455,6 +465,7 @@ export function FinanceOverviewDashboard({ data }: { data: FinanceOverview }) {
             </div>
           </div>
         </Dark>
+        </div>
       </div>
     </div>
   );

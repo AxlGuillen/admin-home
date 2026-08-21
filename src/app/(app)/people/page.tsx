@@ -24,7 +24,7 @@ export default async function PeoplePage() {
         actions={
           <PersonFormDialog
             trigger={
-              <Button>
+              <Button data-tour="alta">
                 <PlusIcon className="size-4" />
                 Agregar persona
               </Button>
@@ -34,6 +34,8 @@ export default async function PeoplePage() {
       />
 
       <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_1fr]">
+        {/* Wrapper `grid`: ancla del tour sin cambiar el stretch del item. */}
+        <div data-tour="personas" className="grid">
         <Dominant
           label="Personas del hogar"
           value={String(people.length)}
@@ -61,14 +63,17 @@ export default async function PeoplePage() {
             </div>
           }
         />
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Kpi
-            label="Tarjetas asignadas"
-            value={String(assigned)}
-            step={3}
-            hint={`de ${active.length} activas`}
-          />
+          <div data-tour="asignadas" className="grid">
+            <Kpi
+              label="Tarjetas asignadas"
+              value={String(assigned)}
+              step={3}
+              hint={`de ${active.length} activas`}
+            />
+          </div>
           <Kpi
             label="Sin dueño"
             value={String(active.length - assigned)}

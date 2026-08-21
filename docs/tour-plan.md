@@ -87,10 +87,30 @@ Verificado en navegador (ambos temas): auto-arranque en primera visita, "1 de
 3" con 4 pasos definidos (el huérfano se filtró), Esc cierra y marca visto,
 recarga ya no re-arranca, y el botón de ayuda relanza.
 
-### Fase 2 · Contenido
+### Fase 2 · Contenido ✅
 
 `data-tour` en los anclajes + pasos de las 5 pantallas + botón de ayuda +
-auto-arranque. Guion por pantalla (borrador, se pule al escribir):
+auto-arranque. Decisiones al implementar:
+
+- **Tono "para qué te sirve"**, con el qué implícito.
+- **Un solo punto de cableado**: el sidebar persiste entre rutas, así que
+  `AppSidebar` resuelve el tour por `pathname` (`tours.ts` en `app`) y renderiza
+  tanto el `TourAutoStart` como el botón de ayuda. Las pantallas no se tocan
+  salvo por los anclajes.
+- Los guiones de detalle/análisis viven en `finance/tours.ts` (su UI es del
+  módulo) y se exportan por `index.ts`; los de Inicio/Finanzas/Personas en
+  `app/(app)/tours.ts`, porque esas pantallas se componen en `app`.
+- **Wrapper `<div data-tour className="grid">`** alrededor de cards que son
+  hijas de grid: ancla sin cambiar el stretch del item. Donde ya había un div
+  propio (selector de mes, filtro de dueños), el atributo va directo.
+- El botón de la píldora "Análisis" y el de "Agregar persona" se anclan directo:
+  `Button` de shadcn hace spread de props, `data-tour` pasa.
+- Verificado en navegador: los 5 pasos de Inicio anclan (dominante, fugas, nav,
+  colapso, tema), "1 de 5", Listo marca visto. Un hallazgo: **el click en el
+  overlay cierra el tour** (default de driver.js) — se dejó así, salir fácil
+  vale más que forzar el recorrido.
+
+Guion por pantalla:
 
 | Pantalla | Pasos |
 | --- | --- |

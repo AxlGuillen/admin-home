@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import { LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import { signOut } from "@/app/(auth)/login/actions";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { TourAutoStart, TourButton } from "@/components/tour";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 import { SidebarNav } from "./sidebar-nav";
 import { SIDEBAR_COOKIE } from "./sidebar-state";
+import { tourForPath } from "./tours";
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
@@ -24,6 +27,9 @@ export function AppSidebar({
   defaultCollapsed: boolean;
 }) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  // El sidebar persiste entre rutas: un solo punto resuelve el tour de la
+  // pantalla actual para el auto-arranque y para el botón de ayuda.
+  const tour = tourForPath(usePathname());
 
   // La cookie es para que el Server Component pinte el ancho correcto en el
   // primer paint; el estado local evita esperar al servidor para animar.
@@ -57,6 +63,7 @@ export function AppSidebar({
                 aria-label="Expandir el menú"
                 aria-expanded={false}
                 aria-controls="app-sidebar"
+                data-tour="colapso"
                 className="ctl group/mark relative grid size-7 place-items-center rounded-[var(--r-el-sm)]"
               >
                 <span className="bg-brand grid size-6 place-items-center rounded-[var(--r-el-sm)] transition-opacity duration-[var(--dur-micro)] group-focus-visible/mark:opacity-0 group-hover/mark:opacity-0">
@@ -87,6 +94,7 @@ export function AppSidebar({
                   aria-label="Colapsar el menú"
                   aria-expanded
                   aria-controls="app-sidebar"
+                  data-tour="colapso"
                   className="ctl text-ink-mut hover:bg-line-2 hover:text-ink-2 ml-auto grid size-7 flex-none place-items-center rounded-[var(--r-el-sm)]"
                 >
                   <PanelLeftClose className="size-[17px]" strokeWidth={2} />
@@ -101,7 +109,17 @@ export function AppSidebar({
       <SidebarNav collapsed={collapsed} />
 
       <div className={cn("space-y-2", collapsed ? "p-2" : "p-3")}>
-        <ThemeToggle compact={collapsed} />
+        <div
+          data-tour="tema"
+          className={cn(collapsed ? "space-y-2" : "flex items-center gap-2")}
+        >
+          <div className="min-w-0 flex-1">
+            <ThemeToggle compact={collapsed} />
+          </div>
+          {tour && (
+            <TourButton tour={tour} className={cn(collapsed && "w-full")} />
+          )}
+        </div>
 
         {/* Pie de sidebar: card oscura con el bisel de dial detrás del avatar.
             El dial mide 74px y no cabe en el riel, así que ahí no se pone. */}
@@ -143,6 +161,8 @@ export function AppSidebar({
           </form>
         </div>
       </div>
+
+      {tour && <TourAutoStart tour={tour} />}
     </aside>
   );
 }

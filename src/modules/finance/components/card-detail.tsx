@@ -92,6 +92,8 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
+        {/* Wrapper `grid`: ancla del tour sin cambiar el stretch del item. */}
+        <div data-tour="resumen" className="grid">
         <Dominant
           label={card.isCredit ? "Deuda de la tarjeta" : "Saldo de la cuenta"}
           value={short(totals.balanceCents ?? 0)}
@@ -122,6 +124,7 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
             </div>
           }
         />
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           {card.isCredit ? (
@@ -152,14 +155,16 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
                 value={short(totals.inflowCents)}
                 step={1}
               />
-              <Dark
-                label="Costo del crédito"
-                keyValue={short(totals.costCents)}
-              >
-                <p className="text-dark-fg/70 text-[11px]">
-                  Intereses, comisiones e IVA.
-                </p>
-              </Dark>
+              <div data-tour="costo" className="grid">
+                <Dark
+                  label="Costo del crédito"
+                  keyValue={short(totals.costCents)}
+                >
+                  <p className="text-dark-fg/70 text-[11px]">
+                    Intereses, comisiones e IVA.
+                  </p>
+                </Dark>
+              </div>
             </>
           ) : (
             <>
@@ -384,6 +389,7 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
 
       {/* Top 5 cargos del mes + tabla de movimientos */}
       <div className="grid gap-4 lg:grid-cols-[1fr_1.6fr]">
+        <div data-tour="top5" className="grid">
         <Panel
           title={`Top 5 cargos · ${monthLabel(selected)}`}
           subtitle={
@@ -422,11 +428,12 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
             </ol>
           )}
         </Panel>
+        </div>
 
         <Panel>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2.5">
             <h4 className="text-[13px] font-extrabold">Movimientos</h4>
-            <div className="flex items-center gap-2">
+            <div data-tour="orden" className="flex items-center gap-2">
               <span className="text-ink-mut font-mono text-[9px] font-bold tracking-[0.04em] uppercase">
                 Orden
               </span>
@@ -456,7 +463,7 @@ export function CardDetailDashboard({ data }: { data: CardDetail }) {
             </div>
           </div>
 
-          <div className="mb-2 flex flex-wrap">
+          <div data-tour="meses" className="mb-2 flex flex-wrap">
             {monthKeys.map((m) => (
               <button
                 key={m}

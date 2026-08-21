@@ -37,6 +37,8 @@ export default async function DashboardPage() {
       />
 
       <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_1.4fr]">
+        {/* Wrapper `grid`: ancla del tour sin cambiar el stretch del item. */}
+        <div data-tour="balance" className="grid">
         <Dominant
           label="Balance del hogar"
           value={short(balanceCents)}
@@ -63,6 +65,7 @@ export default async function DashboardPage() {
             </div>
           }
         />
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Kpi
@@ -88,14 +91,16 @@ export default async function DashboardPage() {
             hint={`${overview.byMonth.length} meses`}
             ticks
           />
-          <Dark
-            label="Fuga del mes"
-            keyValue={short(overview.totals.creditCostCents)}
-          >
-            <p className="text-dark-fg/70 text-[11px]">
-              Intereses, comisiones e IVA acumulados.
-            </p>
-          </Dark>
+          <div data-tour="fuga-mes" className="grid">
+            <Dark
+              label="Fuga del mes"
+              keyValue={short(overview.totals.creditCostCents)}
+            >
+              <p className="text-dark-fg/70 text-[11px]">
+                Intereses, comisiones e IVA acumulados.
+              </p>
+            </Dark>
+          </div>
         </div>
       </div>
 
