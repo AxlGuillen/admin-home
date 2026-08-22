@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Archivo, JetBrains_Mono } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
@@ -22,6 +22,21 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Admin Home",
   description: "Administración y registro de los ámbitos de la casa.",
+  // Safari pide /apple-touch-icon.png por convención, pero solo si no hay <link>;
+  // explícito no depende del fallback.
+  icons: { apple: "/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Admin Home", statusBarStyle: "default" },
+};
+
+// Pinta el marco de la ventana instalada y la UI del navegador móvil. Va al
+// canvas, no a la marca: el acento se concentra en la dominante (SKIN), no en
+// el chrome. Sigue al sistema; si el toggle fuerza el otro tema, el marco no lo
+// acompaña — limitación conocida de meta theme-color, no un bug nuestro.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8fbfc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a1319" },
+  ],
 };
 
 export default function RootLayout({

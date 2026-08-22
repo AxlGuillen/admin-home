@@ -33,6 +33,7 @@ export function SidebarNav({ collapsed }: { collapsed: boolean }) {
   return (
     <div className="flex flex-1 flex-col">
       <nav
+        data-tour="nav"
         className={cn(
           "flex flex-1 flex-col gap-0.5",
           collapsed ? "p-2 pt-3" : "p-3",

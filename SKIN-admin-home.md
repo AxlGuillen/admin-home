@@ -398,6 +398,18 @@ claro.
 del tema claro son medios tonos pensados para leerse sobre blanco; sobre
 grafito se apagan.
 
+**La rampa de marca se parte por USO en oscuro.** `--brand-700` era tinta del
+kicker y sustrato de `--brand-fill` a la vez; a `#076F96` sobre la superficie
+oscura daba 2.88:1. En `.dark` se separan: `--brand-700: #22AEDE` (tinta,
+6.31:1) y `--brand-fill: #0B7BA6` (relleno: 4.77:1 con blanco encima, 3.40:1
+contra la superficie). Es el mismo principio de §9 del motor: un token de tinta
+no es un token de relleno.
+
+**El overlay del tour lleva la marca, no negro muerto.** `--tour-overlay-color`
+es `--brand-900` al 55% en claro; en oscuro sí es negro al 65% y el popover se
+despega por el **borde** (`--tour-popover-line: #3D565F`) y el filo — elevación
+por filo, como todo en este tema.
+
 ### Mecanismo
 
 `next-themes` con `attribute="class"` y `defaultTheme="system"`. El

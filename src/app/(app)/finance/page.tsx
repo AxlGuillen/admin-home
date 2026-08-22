@@ -89,7 +89,7 @@ export default async function FinancePage({
         }
         actions={
           <>
-            <Button variant="secondary" asChild>
+            <Button variant="secondary" asChild data-tour="analisis">
               <Link href="/finance/analisis">
                 <BarChart3 className="size-[15px]" strokeWidth={1.5} />
                 Análisis
@@ -117,6 +117,8 @@ export default async function FinancePage({
 
       {!showArchived && (
         <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_1fr]">
+          {/* Wrapper `grid`: ancla del tour sin cambiar el stretch del item. */}
+          <div data-tour="deuda" className="grid">
           <Dominant
             label="Deuda total en crédito"
             value={short(overview.totals.currentDebtCents)}
@@ -135,7 +137,9 @@ export default async function FinancePage({
               </div>
             }
           />
+          </div>
           {upcoming ? (
+            <div data-tour="proximo-pago" className="grid">
             <Dark
               label="Próximo pago"
               keyValue={formatCivilDate(upcoming.due, HOUSEHOLD_LOCALE)}
@@ -156,12 +160,16 @@ export default async function FinancePage({
                 </div>
               </div>
             </Dark>
+            </div>
           ) : null}
         </div>
       )}
 
       {people.length > 0 && (
-        <div className="mb-5.5 flex flex-wrap items-center gap-2">
+        <div
+          data-tour="duenos"
+          className="mb-5.5 flex flex-wrap items-center gap-2"
+        >
           <span className="text-muted-foreground mr-0.5 text-[13px]">
             Dueño:
           </span>
@@ -213,7 +221,7 @@ export default async function FinancePage({
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div data-tour="tarjetas" className="flex flex-col gap-3">
           {visible.map((card) => (
             <CardItem
               key={card.id}
